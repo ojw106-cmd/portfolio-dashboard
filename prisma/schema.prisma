@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 계정
+model Account {
+  id        String   @id @default(cuid())
+  accountId String   @unique // jinwon, dad, lion 등
+  name      String   // 진원, 아빠, 리온 등
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  portfolio    Stock[]
+  cashHoldings CashHolding[]
+  trades       Trade[]
+  realizedPnL  RealizedPnL[]
+}
+
+// 포트폴리오 내 주식
+model Stock {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  market       String // KR, US, CRYPTO
+  sector       String // AI, BIGTECH, ROBOT, BIO, POWER, OPTICAL, SPACE, DEFENSE, BATTERY, HEDGE, VENTURE, ETC
+  code         String // 종목코드 (005930, AAPL, BTC)
+  name         String // 종목명
+  targetWeight Float  @default(0) // 목표비중 (%)
+  buyPrice     Float  @default(0) // 평균매수가
+  currentPrice Float  @default(0) // 현재가
+  holdingQty   Float  @default(0) // 보유수량
+  memo         String? // 메모
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([accountId, code, market])
+}
+
+// 현금 보유
+model CashHolding {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  market       String // KR, US, CRYPTO
+  amount       Float  @default(0) // 보유 현금
+  targetWeight Float  @default(0) // 목표비중 (%)
+  memo         String? // 메모
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([accountId, market])
+}
+
+// 거래 내역
+model Trade {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  date DateTime @default(now())
+  type String // buy, sell, deposit, withdraw, exchange
+
+  // 거래 대상 시장
+  market String? // KR, US, CRYPTO
+
+  // 매수/매도 관련
+  code     String? // 종목코드
+  name     String? // 종목명
+  price    Float? // 거래가격
+  qty      Float? // 수량
+  amount   Float? // 거래금액
+  pnl      Float? // 실현손익 (매도 시)
+  buyPrice Float? // 매수가 (매도 시 참조용)
+
+  // 환전 관련
+  direction  String? // KR_TO_US, US_TO_KR
+  fromAmount Float? // 환전 원본 금액
+  toAmount   Float? // 환전 결과 금액
+  rate       Float? // 적용 환율
+
+  createdAt DateTime @default(now())
+}
+
+// 누적 실현손익
+model RealizedPnL {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  market String // KR, US
+  amount Float  @default(0) // 누적 실현손익
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([accountId, market])
+}
+
+// 매매일지
+model JournalEntry {
+  id        String  @id @default(cuid())
+  date      String  @unique // YYYY-MM-DD
+  content   String  // 일지 내용
+  important Boolean @default(false) // 중요 표시
+
+  updatedAt DateTime @updatedAt
+}
+
+// 환율 캐시
+model ExchangeRate {
+  id        String   @id @default(cuid())
+  currency  String   @unique // USD
+  rate      Float // 원화 환산 비율
+  updatedAt DateTime @updatedAt
+}
+
+// 사용자 정의 섹터
+model Sector {
+  id        String   @id @default(cuid())
+  code      String   @unique // AI, BIGTECH 등
+  name      String   // AI/반도체, 빅테크 등
+  color     String   // HEX 색상 (#7c4dff)
+  sortOrder Int      @default(0) // 정렬 순서
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 자산 스냅샷
+model Snapshot {
+  id        String   @id @default(cuid())
+  date      DateTime @default(now())
+
+  totalAsset      Float // 전체 자산 (원화 환산)
+  totalAssetChange Float @default(0) // 이전 스냅샷 대비 변화
+
+  // 계정별 자산
+  jinwonAsset      Float @default(0)
+  jinwonChange     Float @default(0)
+  dadAsset         Float @default(0)
+  dadChange        Float @default(0)
+  lionAsset        Float @default(0)
+  lionChange       Float @default(0)
+
+  // 추가 정보
+  exchangeRate     Float @default(1400) // 스냅샷 당시 환율
+  memo             String? // 메모
+
+  createdAt DateTime @default(now())
+}
