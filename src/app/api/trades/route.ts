@@ -203,7 +203,8 @@ export async function POST(request: NextRequest) {
 
     // 거래 기록 생성 (계산된 pnl과 buyPrice 포함)
     // sector는 Stock용이므로 Trade에서 제외
-    const { sector, ...tradeDataWithoutSector } = tradeData;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { sector: _sector, ...tradeDataWithoutSector } = tradeData;
     const trade = await prisma.trade.create({
       data: {
         accountId: account.id,
