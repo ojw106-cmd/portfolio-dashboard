@@ -107,114 +107,17 @@ export async function POST(request: NextRequest) {
     const tradeDate = tradeData.date ? new Date(tradeData.date) : new Date();
     delete tradeData.date; // date는 별도로 처리했으므로 제거
 
-    // 매수/매도 시 Stock 업데이트 및 실현손익 계산
-    let calculatedPnl = tradeData.pnl;
-    let tradeBuyPrice = tradeData.buyPrice;
-
-    if ((type === 'buy' || type === 'sell') && tradeData.code && tradeData.market) {
-      const { code, market, price, qty, sector, name } = tradeData;
-
-      // 기존 Stock 조회
-      const existingStock = await prisma.stock.findUnique({
-        where: {
-          accountId_code_market: {
-            accountId: account.id,
-            code,
-            market,
-          },
-        },
-      });
-
-      if (type === 'buy') {
-        if (existingStock) {
-          // 기존 보유 종목 - 평균매수가 재계산
-          const totalCost = existingStock.buyPrice * existingStock.holdingQty + price * qty;
-          const totalQty = existingStock.holdingQty + qty;
-          const newAvgPrice = totalQty > 0 ? totalCost / totalQty : price;
-
-          await prisma.stock.update({
-            where: {
-              accountId_code_market: {
-                accountId: account.id,
-                code,
-                market,
-              },
-            },
-            data: {
-              buyPrice: newAvgPrice,
-              holdingQty: totalQty,
-            },
-          });
-        } else {
-          // 신규 종목 추가
-          await prisma.stock.create({
-            data: {
-              accountId: account.id,
-              market,
-              sector: sector || 'ETC',
-              code,
-              name,
-              buyPrice: price,
-              holdingQty: qty,
-              currentPrice: price,
-            },
-          });
-        }
-      } else if (type === 'sell') {
-        if (existingStock) {
-          // 매도 시 실현손익 계산
-          tradeBuyPrice = existingStock.buyPrice;
-          calculatedPnl = (price - existingStock.buyPrice) * qty;
-
-          // 보유수량 감소
-          const newQty = existingStock.holdingQty - qty;
-
-          if (newQty <= 0) {
-            // 전량 매도 시 수량 0으로 (종목은 유지)
-            await prisma.stock.update({
-              where: {
-                accountId_code_market: {
-                  accountId: account.id,
-                  code,
-                  market,
-                },
-              },
-              data: {
-                holdingQty: 0,
-              },
-            });
-          } else {
-            await prisma.stock.update({
-              where: {
-                accountId_code_market: {
-                  accountId: account.id,
-                  code,
-                  market,
-                },
-              },
-              data: {
-                holdingQty: newQty,
-              },
-            });
-          }
-        }
-      }
-    }
-
-    // 거래 기록 생성 (계산된 pnl과 buyPrice 포함)
     const trade = await prisma.trade.create({
       data: {
         accountId: account.id,
         type,
         date: tradeDate,
         ...tradeData,
-        pnl: calculatedPnl,
-        buyPrice: tradeBuyPrice,
       },
     });
 
     // 매도 시 실현손익 업데이트
-    if (type === 'sell' && calculatedPnl !== undefined && calculatedPnl !== null) {
+    if (type === 'sell' && tradeData.pnl !== undefined) {
       const market = tradeData.market;
       await prisma.realizedPnL.upsert({
         where: {
@@ -223,10 +126,10 @@ export async function POST(request: NextRequest) {
         create: {
           accountId: account.id,
           market,
-          amount: calculatedPnl,
+          amount: tradeData.pnl,
         },
         update: {
-          amount: { increment: calculatedPnl },
+          amount: { increment: tradeData.pnl },
         },
       });
     }
