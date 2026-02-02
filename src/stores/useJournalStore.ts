@@ -109,6 +109,7 @@ export const useJournalStore = create<JournalState>((set, get) => ({
     get().fetchJournal(year, month);
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   addTradeEntry: async (_trade: TradeEntry, _date?: string) => {
     // 매매내역은 DB의 trades 테이블에서 자동으로 불러오므로
     // 매매일지 텍스트 영역에는 자동 입력하지 않음

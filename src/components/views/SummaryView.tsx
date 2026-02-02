@@ -37,7 +37,7 @@ interface Snapshot {
 }
 
 export function SummaryView() {
-  const { accounts, fetchAccounts } = useAccountStore();
+  const { accounts } = useAccountStore();
   const { rate } = useExchangeRateStore();
   const { setActiveTab, showStatus } = useUIStore();
   const { setCurrentAccount } = useAccountStore();
