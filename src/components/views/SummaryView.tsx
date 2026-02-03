@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { SummaryCard } from '@/components/dashboard/SummaryCard';
+import { EarningsCalendar } from '@/components/dashboard/EarningsCalendar';
 import { useAccountStore } from '@/stores/useAccountStore';
 import { useExchangeRateStore } from '@/stores/useExchangeRateStore';
 import { useUIStore } from '@/stores/useUIStore';
@@ -45,6 +46,7 @@ export function SummaryView() {
   const [isLoading, setIsLoading] = useState(true);
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [isSnapshotLoading, setIsSnapshotLoading] = useState(false);
+  const [allStocks, setAllStocks] = useState<{ code: string; name: string; market: string }[]>([]);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -71,6 +73,7 @@ export function SummaryView() {
     const fetchAllSummaries = async () => {
       setIsLoading(true);
       const results: AccountSummary[] = [];
+      const stocksForCalendar: { code: string; name: string; market: string }[] = [];
 
       for (const account of accounts) {
         try {
@@ -88,6 +91,17 @@ export function SummaryView() {
             currentPrice: s.currentPrice,
             holdingQty: s.holdingQty,
           }));
+
+          // 실적발표 캘린더용 종목 수집 (US 주식만)
+          detail.portfolio
+            .filter((s) => s.market === 'US' && s.holdingQty > 0)
+            .forEach((s) => {
+              stocksForCalendar.push({
+                code: s.code,
+                name: s.name,
+                market: s.market,
+              });
+            });
 
           const cash = detail.cashHoldings.map((c) => ({
             market: c.market,
@@ -133,6 +147,7 @@ export function SummaryView() {
       }
 
       setSummaries(results);
+      setAllStocks(stocksForCalendar);
       setIsLoading(false);
     };
 
@@ -435,6 +450,9 @@ export function SummaryView() {
           />
         ))}
       </div>
+
+      {/* 실적발표 캘린더 */}
+      {allStocks.length > 0 && <EarningsCalendar stocks={allStocks} />}
 
       {/* 스냅샷 기록 */}
       {snapshots.length > 0 && (
