@@ -143,7 +143,7 @@ export function ResearchView() {
     
     setIsSearching(true);
     try {
-      const market = newStock.market;
+      const market = newStock.market.toLowerCase();
       const res = await fetch(`/api/search/${market}?q=${encodeURIComponent(query)}`);
       if (res.ok) {
         const results = await res.json();
