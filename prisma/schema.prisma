@@ -155,3 +155,14 @@ model Snapshot {
 
   createdAt DateTime @default(now())
 }
+
+// 종목 리서치
+model ResearchNote {
+  id        String   @id @default(cuid())
+  stockId   String   @unique // code-market 형태 (예: AAPL-US, 005930-KR)
+  ticker    String   // 티커 (AAPL, 삼성전자)
+  content   String   @default("") // 리서치 내용 (마크다운)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

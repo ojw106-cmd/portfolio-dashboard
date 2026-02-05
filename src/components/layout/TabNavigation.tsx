@@ -86,6 +86,17 @@ export function TabNavigation() {
       >
         매매일지
       </button>
+
+      <button
+        onClick={() => setActiveTab('research')}
+        className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+          activeTab === 'research'
+            ? 'bg-gradient-to-r from-[#4fc3f7] to-[#29b6f6] text-[#1a1a2e]'
+            : 'text-[#888] hover:bg-white/10 hover:text-[#ccc]'
+        }`}
+      >
+        종목 리서치
+      </button>
     </div>
   );
 }

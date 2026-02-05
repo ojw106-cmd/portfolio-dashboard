@@ -6,6 +6,7 @@ import { TabNavigation } from '@/components/layout/TabNavigation';
 import { SummaryView } from '@/components/views/SummaryView';
 import { PortfolioView } from '@/components/views/PortfolioView';
 import { JournalView } from '@/components/views/JournalView';
+import { ResearchView } from '@/components/views/ResearchView';
 import { AddAccountModal } from '@/components/modals/AddAccountModal';
 import { MemoModal } from '@/components/modals/MemoModal';
 import { ConfirmModal } from '@/components/modals/ConfirmModal';
@@ -56,6 +57,7 @@ export default function Home() {
         {activeTab === 'summary' && <SummaryView />}
         {activeTab === 'portfolio' && <PortfolioView />}
         {activeTab === 'journal' && <JournalView />}
+        {activeTab === 'research' && <ResearchView />}
 
         <AddAccountModal />
         <MemoModal />
