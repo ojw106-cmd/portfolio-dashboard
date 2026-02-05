@@ -37,7 +37,7 @@ export function ResearchView() {
   
   // 종목 검색 상태
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<{ code: string; name: string; market: string }[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   // 폴더 & 종목 로드
@@ -157,7 +157,7 @@ export function ResearchView() {
   };
 
   // 검색 결과 선택
-  const handleSelectSearchResult = (result: any) => {
+  const handleSelectSearchResult = (result: { code: string; name: string; market: string }) => {
     setNewStock({
       ...newStock,
       ticker: result.code,
