@@ -26,11 +26,19 @@ export function ResearchView() {
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   
+  // 폴더 접기/펼치기 상태
+  const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
+  
   // 관리 모달 상태
   const [isAddFolderOpen, setIsAddFolderOpen] = useState(false);
   const [isAddStockOpen, setIsAddStockOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [newStock, setNewStock] = useState({ ticker: '', name: '', market: 'US', folderId: '' });
+  
+  // 종목 검색 상태
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // 폴더 & 종목 로드
   useEffect(() => {
@@ -125,6 +133,40 @@ export function ResearchView() {
     }
   };
 
+  // 종목 검색
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    if (query.trim().length < 1) {
+      setSearchResults([]);
+      return;
+    }
+    
+    setIsSearching(true);
+    try {
+      const market = newStock.market;
+      const res = await fetch(`/api/search/${market}?q=${encodeURIComponent(query)}`);
+      if (res.ok) {
+        const results = await res.json();
+        setSearchResults(results.slice(0, 10));
+      }
+    } catch (error) {
+      console.error('Failed to search:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // 검색 결과 선택
+  const handleSelectSearchResult = (result: any) => {
+    setNewStock({
+      ...newStock,
+      ticker: result.code,
+      name: result.name,
+    });
+    setSearchQuery('');
+    setSearchResults([]);
+  };
+
   // 종목 추가
   const handleAddStock = async () => {
     if (!newStock.ticker.trim() || !newStock.name.trim()) return;
@@ -145,6 +187,19 @@ export function ResearchView() {
     } catch (error) {
       console.error('Failed to add stock:', error);
     }
+  };
+
+  // 폴더 토글
+  const toggleFolder = (folderId: string) => {
+    setCollapsedFolders((prev) => {
+      const next = new Set(prev);
+      if (next.has(folderId)) {
+        next.delete(folderId);
+      } else {
+        next.add(folderId);
+      }
+      return next;
+    });
   };
 
   // 종목 삭제
@@ -202,28 +257,34 @@ export function ResearchView() {
 
           <div className="space-y-3">
             {/* 폴더별 종목 */}
-            {folders.map((folder) => (
-              <div key={folder.id} className="space-y-1">
-                <div className="flex items-center justify-between px-2 py-1 bg-white/5 rounded group">
-                  <span className="text-sm font-semibold text-[#4fc3f7]">
-                    📁 {folder.name} ({folder.stocks.length})
-                  </span>
-                  <div className="hidden group-hover:flex gap-1">
+            {folders.map((folder) => {
+              const isCollapsed = collapsedFolders.has(folder.id);
+              return (
+                <div key={folder.id} className="space-y-1">
+                  <div className="flex items-center justify-between px-2 py-1 bg-white/5 rounded group">
                     <button
-                      onClick={() => handleRenameFolder(folder.id, folder.name)}
-                      className="text-xs text-gray-400 hover:text-white"
+                      onClick={() => toggleFolder(folder.id)}
+                      className="flex items-center gap-2 text-sm font-semibold text-[#4fc3f7] hover:text-[#29b6f6]"
                     >
-                      ✏️
+                      <span>{isCollapsed ? '▶' : '▼'}</span>
+                      <span>📁 {folder.name} ({folder.stocks.length})</span>
                     </button>
-                    <button
-                      onClick={() => handleDeleteFolder(folder.id)}
-                      className="text-xs text-red-400 hover:text-red-300"
-                    >
-                      🗑️
-                    </button>
+                    <div className="hidden group-hover:flex gap-1">
+                      <button
+                        onClick={() => handleRenameFolder(folder.id, folder.name)}
+                        className="text-xs text-gray-400 hover:text-white"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => handleDeleteFolder(folder.id)}
+                        className="text-xs text-red-400 hover:text-red-300"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
-                </div>
-                {folder.stocks.map((stock) => (
+                  {!isCollapsed && folder.stocks.map((stock) => (
                   <div
                     key={stock.id}
                     className="flex items-center justify-between group"
@@ -263,8 +324,9 @@ export function ResearchView() {
                     </div>
                   </div>
                 ))}
-              </div>
-            ))}
+                </div>
+              );
+            })}
 
             {/* 미분류 종목 */}
             {uncategorized.length > 0 && (
@@ -396,6 +458,50 @@ export function ResearchView() {
           <div className="bg-[#1a1a2e] p-6 rounded-xl border border-white/10 w-96">
             <h3 className="text-lg font-bold mb-4 text-[#4fc3f7]">종목 추가</h3>
             <div className="space-y-3">
+              {/* 시장 선택 먼저 */}
+              <select
+                value={newStock.market}
+                onChange={(e) => {
+                  setNewStock({ ...newStock, market: e.target.value, ticker: '', name: '' });
+                  setSearchQuery('');
+                  setSearchResults([]);
+                }}
+                className="w-full bg-white/5 border border-white/10 rounded px-3 py-2"
+              >
+                <option value="US">US (미국)</option>
+                <option value="KR">KR (한국)</option>
+                <option value="CRYPTO">CRYPTO (크립토)</option>
+              </select>
+              
+              {/* 종목 검색 */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  placeholder="종목 검색..."
+                  className="w-full bg-white/5 border border-white/10 rounded px-3 py-2"
+                />
+                {isSearching && (
+                  <div className="absolute right-3 top-3 text-xs text-gray-400">검색 중...</div>
+                )}
+                {searchResults.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a2e] border border-white/10 rounded max-h-60 overflow-y-auto z-10">
+                    {searchResults.map((result, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleSelectSearchResult(result)}
+                        className="w-full text-left px-3 py-2 hover:bg-white/10 border-b border-white/5 last:border-0"
+                      >
+                        <div className="font-semibold">{result.code}</div>
+                        <div className="text-xs text-gray-400">{result.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* 선택된 종목 정보 */}
               <input
                 type="text"
                 value={newStock.ticker}
@@ -410,15 +516,8 @@ export function ResearchView() {
                 placeholder="종목명"
                 className="w-full bg-white/5 border border-white/10 rounded px-3 py-2"
               />
-              <select
-                value={newStock.market}
-                onChange={(e) => setNewStock({ ...newStock, market: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded px-3 py-2"
-              >
-                <option value="US">US (미국)</option>
-                <option value="KR">KR (한국)</option>
-                <option value="CRYPTO">CRYPTO (크립토)</option>
-              </select>
+              
+              {/* 폴더 선택 */}
               <select
                 value={newStock.folderId}
                 onChange={(e) => setNewStock({ ...newStock, folderId: e.target.value })}
@@ -434,7 +533,11 @@ export function ResearchView() {
             </div>
             <div className="flex gap-2 justify-end mt-4">
               <button
-                onClick={() => setIsAddStockOpen(false)}
+                onClick={() => {
+                  setIsAddStockOpen(false);
+                  setSearchQuery('');
+                  setSearchResults([]);
+                }}
                 className="px-4 py-2 bg-white/5 rounded hover:bg-white/10"
               >
                 취소
