@@ -1,7 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccountStore } from '@/stores/useAccountStore';
+
+interface Stock {
+  stockId: string;
+  ticker: string;
+  name: string;
+}
 
 interface ResearchNote {
   stockId: string;
@@ -11,23 +16,27 @@ interface ResearchNote {
 }
 
 export function ResearchView() {
-  const { accounts } = useAccountStore();
+  const [allStocks, setAllStocks] = useState<Stock[]>([]);
   const [selectedStock, setSelectedStock] = useState<string | null>(null);
   const [content, setContent] = useState('');
   const [notes, setNotes] = useState<ResearchNote[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  // 모든 종목 추출 (중복 제거)
-  const allStocks = Array.from(
-    new Map(
-      accounts.flatMap((account) =>
-        account.stocks.map((stock) => [
-          stock.stockId,
-          { stockId: stock.stockId, ticker: stock.ticker, name: stock.name },
-        ])
-      )
-    ).values()
-  );
+  // 모든 종목 로드
+  useEffect(() => {
+    const loadStocks = async () => {
+      try {
+        const res = await fetch('/api/portfolio/all-stocks');
+        if (res.ok) {
+          const stocks = await res.json();
+          setAllStocks(stocks);
+        }
+      } catch (error) {
+        console.error('Failed to load stocks:', error);
+      }
+    };
+    loadStocks();
+  }, []);
 
   // 리서치 노트 로드
   useEffect(() => {
