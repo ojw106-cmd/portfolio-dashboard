@@ -21,7 +21,6 @@ interface ResearchStock {
 
 export function ResearchView() {
   const [folders, setFolders] = useState<ResearchFolder[]>([]);
-  const [uncategorized, setUncategorized] = useState<ResearchStock[]>([]);
   const [selectedStock, setSelectedStock] = useState<ResearchStock | null>(null);
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -65,13 +64,6 @@ export function ResearchView() {
       if (res.ok) {
         const data = await res.json();
         setFolders(data);
-        
-        // 미분류 종목
-        const allStocks = await fetch('/api/research/stocks');
-        if (allStocks.ok) {
-          const stocks = await allStocks.json();
-          setUncategorized(stocks.filter((s: ResearchStock) => !s.folderId));
-        }
       }
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -382,66 +374,6 @@ export function ResearchView() {
                 </div>
               );
             })}
-
-            {/* 미분류 종목 */}
-            {uncategorized.length > 0 && (
-              <div className="space-y-1">
-                <div className="px-2 py-1 bg-white/5 rounded">
-                  <span className="text-sm font-semibold text-gray-400">
-                    📂 미분류 ({uncategorized.length})
-                  </span>
-                </div>
-                {uncategorized.map((stock) => (
-                  <div
-                    key={stock.id}
-                    className="flex items-center justify-between group"
-                  >
-                    <button
-                      onClick={() => setSelectedStock(stock)}
-                      className={`flex-1 text-left px-3 py-2 rounded transition-all ${
-                        selectedStock?.id === stock.id
-                          ? 'bg-gradient-to-r from-[#4fc3f7] to-[#29b6f6] text-[#1a1a2e]'
-                          : 'bg-white/5 text-[#ccc] hover:bg-white/10'
-                      }`}
-                    >
-                      <div className="text-xs opacity-70">{stock.market}</div>
-                      {stock.market === 'KR' ? (
-                        <>
-                          <div className="font-semibold">{stock.name}</div>
-                          <div className="text-xs opacity-70">{stock.ticker}</div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="font-semibold">{stock.ticker}</div>
-                          <div className="text-xs opacity-70">{stock.name}</div>
-                        </>
-                      )}
-                    </button>
-                    <div className="hidden group-hover:flex gap-1 ml-2">
-                      <select
-                        value={stock.folderId || ''}
-                        onChange={(e) => handleMoveStock(stock.id, e.target.value || null)}
-                        className="text-xs bg-[#1a1a2e] border border-white/20 rounded px-1"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <option value="">미분류</option>
-                        {folders.map((f) => (
-                          <option key={f.id} value={f.id}>
-                            {f.name}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        onClick={() => handleDeleteStock(stock.id)}
-                        className="text-xs text-red-400 hover:text-red-300"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>
