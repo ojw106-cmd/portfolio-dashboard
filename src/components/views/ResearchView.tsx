@@ -242,7 +242,7 @@ export function ResearchView() {
     setIsSyncModalOpen(true);
     
     try {
-      const res = await fetch('/api/research/sync-watchlist');
+      const res = await fetch('/api/research/sync');
       const result = await res.json();
       setSyncResult(result);
       await loadData(); // 리로드
