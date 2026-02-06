@@ -454,6 +454,16 @@ export function POCView() {
                   ? 'text-red-400'
                   : 'text-gray-400';
               
+              // 현재 가치 (원화)
+              const currentValueKRW = pos.amount * 10000;
+              
+              // 매수금액 (원화)
+              const purchaseAmountKRW = pos.avgPrice && pos.shares
+                ? isUS
+                  ? pos.avgPrice * pos.shares * EXCHANGE_RATE
+                  : pos.avgPrice * pos.shares
+                : 0;
+              
               return (
                 <div
                   key={idx}
@@ -468,18 +478,22 @@ export function POCView() {
                   </div>
 
                   <div className="text-lg font-bold text-[#4fc3f7] mb-1">
-                    💰 {pos.amount.toLocaleString()}M원 ({pos.percentage.toFixed(1)}%)
+                    💰 {currentValueKRW.toLocaleString()}원
                   </div>
+                  <div className="text-xs text-[#888] mb-1">(현재 가격 기준)</div>
                   <div className="text-sm text-[#888] mb-3">
-                    🎯 확신도: {pos.confidence}/10 {pos.thesisValid ? '✅' : '❌'}
+                    비중: {pos.percentage.toFixed(1)}% | 🎯 확신도: {pos.confidence}/10 {pos.thesisValid ? '✅' : '❌'}
                   </div>
 
                   {/* 추가 정보 */}
                   {pos.avgPrice && pos.shares && pos.currentPrice && (
                     <div className="mt-3 pt-3 border-t border-white/10 space-y-1 text-xs">
                       <div className="text-[#888]">
-                        📊 매수가: {isUS ? '$' : '₩'}
+                        📊 매수평균: {isUS ? '$' : '₩'}
                         {pos.avgPrice.toLocaleString()}
+                      </div>
+                      <div className="text-[#888]">
+                        매수금액: {purchaseAmountKRW.toLocaleString()}원
                       </div>
                       <div className="text-[#888]">
                         보유: {pos.shares.toLocaleString()}주
@@ -556,6 +570,16 @@ export function POCView() {
                   ? 'text-red-400'
                   : 'text-gray-400';
               
+              // 현재 가치 (원화)
+              const currentValueKRW = pos.amount * 10000;
+              
+              // 매수금액 (원화)
+              const purchaseAmountKRW = pos.avgPrice && pos.shares
+                ? isUS
+                  ? pos.avgPrice * pos.shares * EXCHANGE_RATE
+                  : pos.avgPrice * pos.shares
+                : 0;
+              
               return (
                 <div
                   key={idx}
@@ -570,18 +594,22 @@ export function POCView() {
                   </div>
 
                   <div className="text-lg font-bold text-purple-400 mb-1">
-                    💰 {pos.amount.toLocaleString()}M원 ({pos.percentage.toFixed(1)}%)
+                    💰 {currentValueKRW.toLocaleString()}원
                   </div>
+                  <div className="text-xs text-[#888] mb-1">(현재 가격 기준)</div>
                   <div className="text-sm text-[#888] mb-3">
-                    🎯 확신도: {pos.confidence}/10 {pos.thesisValid ? '✅' : '❌'}
+                    비중: {pos.percentage.toFixed(1)}% | 🎯 확신도: {pos.confidence}/10 {pos.thesisValid ? '✅' : '❌'}
                   </div>
 
                   {/* 추가 정보 */}
                   {pos.avgPrice && pos.shares && pos.currentPrice && (
                     <div className="mt-3 pt-3 border-t border-white/10 space-y-1 text-xs">
                       <div className="text-[#888]">
-                        📊 매수가: {isUS ? '$' : '₩'}
+                        📊 매수평균: {isUS ? '$' : '₩'}
                         {pos.avgPrice.toLocaleString()}
+                      </div>
+                      <div className="text-[#888]">
+                        매수금액: {purchaseAmountKRW.toLocaleString()}원
                       </div>
                       <div className="text-[#888]">
                         보유: {pos.shares.toLocaleString()}주
@@ -683,46 +711,6 @@ export function POCView() {
         </div>
       </div>
 
-      {/* 5. 예비비 관리 패널 */}
-      <div className="bg-gradient-to-br from-orange-500/10 to-red-500/10 rounded-xl p-6 border border-orange-500/30">
-        <h2 className="text-xl font-bold text-white mb-4">예비비 현황</h2>
-
-        <div className="space-y-4">
-          <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-white font-semibold">
-                고정 예비비 🔒
-              </span>
-              <span className="text-xl font-bold text-white">
-                {selectedAccount.reserveFunds.fixed.toLocaleString()}M
-              </span>
-            </div>
-            <div className="space-y-1 text-sm text-[#888]">
-              <div>- 종합소득세: 9,000M 필요</div>
-              <div className="text-red-400">
-                (부족: {9000 - selectedAccount.reserveFunds.fixed}M - 4월 중단타 익절 필요)
-              </div>
-              <div>- 양도소득세: 3,000M (7월)</div>
-            </div>
-          </div>
-
-          <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-white font-semibold">극단 예비비</span>
-              <span className="text-xl font-bold text-orange-400">
-                {selectedAccount.reserveFunds.extreme.toLocaleString()}M
-              </span>
-            </div>
-            <div className="text-sm text-[#888] mb-2">
-              사용 조건: 5가지 ALL 충족 필요 (룰북 제8조)
-            </div>
-            <button className="w-full py-2 bg-white/10 hover:bg-white/20 rounded text-sm text-white transition-all">
-              상세보기
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* POC 노트 */}
       <div className="bg-white/5 rounded-xl p-6 border border-white/10">
         <h3 className="text-lg font-bold text-white mb-3">📝 POC 노트</h3>
@@ -732,7 +720,7 @@ export function POCView() {
           <li>✅ 시장별 포트폴리오 (미장/국장)</li>
           <li>✅ 슬롯 카드 디자인 (빈/채워진)</li>
           <li>✅ 비중 제한 경고 시스템</li>
-          <li>✅ 예비비 관리 패널</li>
+          <li>✅ 상세 종목 정보 (매수평균, 수익/수익률)</li>
           <li className="text-yellow-400">
             🚧 다음: 실제 DB 연동 + 종목 추가/편집 기능
           </li>
