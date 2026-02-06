@@ -89,6 +89,7 @@ function parseMarkdown(content: string, marketType: '미장' | '국장'): Parsed
 /**
  * GET /api/research/sync-watchlist
  * Sync watchlist markdown files to research database
+ * Updated: 2026-02-06 14:50 KST (force redeploy)
  */
 export async function GET() {
   const result: SyncResult = {
