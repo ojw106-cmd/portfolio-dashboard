@@ -103,11 +103,10 @@ export async function GET() {
   };
 
   try {
-    const workspaceRoot = process.env.WORKSPACE_ROOT || '/home/ubuntu/.openclaw/workspace';
-    
-    // Read markdown files
-    const usFilePath = join(workspaceRoot, 'projects/investment/관심종목-미장.md');
-    const krFilePath = join(workspaceRoot, 'projects/investment/관심종목-국장.md');
+    // Read markdown files from data folder (repo root)
+    const dataDir = join(process.cwd(), 'data');
+    const usFilePath = join(dataDir, '관심종목-미장.md');
+    const krFilePath = join(dataDir, '관심종목-국장.md');
 
     let usContent = '';
     let krContent = '';
