@@ -35,6 +35,11 @@ export function ResearchView() {
   const [newFolderName, setNewFolderName] = useState('');
   const [newStock, setNewStock] = useState({ ticker: '', name: '', market: 'US', folderId: '' });
   
+  // Sync 관심종목 상태
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<any>(null);
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+  
   // 종목 검색 상태
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{ code: string; name: string; market: string }[]>([]);
@@ -230,6 +235,30 @@ export function ResearchView() {
     }
   };
 
+  // Sync 관심종목
+  const handleSyncWatchlist = async () => {
+    setIsSyncing(true);
+    setSyncResult(null);
+    setIsSyncModalOpen(true);
+    
+    try {
+      const res = await fetch('/api/research/sync-watchlist');
+      const result = await res.json();
+      setSyncResult(result);
+      await loadData(); // 리로드
+    } catch (error) {
+      console.error('Failed to sync watchlist:', error);
+      setSyncResult({
+        added: 0,
+        skipped: 0,
+        errors: [`Sync failed: ${error}`],
+        details: { foldersCreated: [], stocksAdded: [], stocksSkipped: [] },
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
       {/* 왼쪽: 폴더 + 종목 목록 */}
@@ -238,6 +267,14 @@ export function ResearchView() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-[#4fc3f7]">종목 리서치</h2>
             <div className="flex gap-2">
+              <button
+                onClick={handleSyncWatchlist}
+                disabled={isSyncing}
+                className="px-3 py-1 bg-[#4fc3f7]/20 rounded text-xs hover:bg-[#4fc3f7]/30 disabled:opacity-50"
+                title="관심종목 파일 동기화"
+              >
+                {isSyncing ? '⏳' : '🔄'} Sync
+              </button>
               <button
                 onClick={() => setIsAddFolderOpen(true)}
                 className="px-3 py-1 bg-white/10 rounded text-xs hover:bg-white/20"
@@ -547,6 +584,96 @@ export function ResearchView() {
                 className="px-4 py-2 bg-gradient-to-r from-[#4fc3f7] to-[#29b6f6] text-[#1a1a2e] rounded font-semibold"
               >
                 추가
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sync 관심종목 결과 모달 */}
+      {isSyncModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-[#1a1a2e] p-6 rounded-xl border border-white/10 w-[500px] max-h-[80vh] overflow-y-auto">
+            <h3 className="text-lg font-bold mb-4 text-[#4fc3f7]">
+              {isSyncing ? '🔄 동기화 중...' : '✅ 동기화 완료'}
+            </h3>
+            
+            {isSyncing ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-gray-400">관심종목 파일을 읽고 있습니다...</div>
+              </div>
+            ) : syncResult ? (
+              <div className="space-y-4">
+                {/* 요약 */}
+                <div className="bg-white/5 p-4 rounded-lg">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <div className="text-gray-400">추가된 종목</div>
+                      <div className="text-2xl font-bold text-green-400">{syncResult.added}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400">건너뛴 종목</div>
+                      <div className="text-2xl font-bold text-yellow-400">{syncResult.skipped}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 생성된 폴더 */}
+                {syncResult.details?.foldersCreated?.length > 0 && (
+                  <div>
+                    <div className="text-sm text-gray-400 mb-2">📁 생성된 폴더</div>
+                    <div className="bg-white/5 p-3 rounded text-xs space-y-1">
+                      {syncResult.details.foldersCreated.map((folder: string, idx: number) => (
+                        <div key={idx} className="text-green-400">+ {folder}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 추가된 종목 */}
+                {syncResult.details?.stocksAdded?.length > 0 && (
+                  <div>
+                    <div className="text-sm text-gray-400 mb-2">✅ 추가된 종목</div>
+                    <div className="bg-white/5 p-3 rounded text-xs max-h-40 overflow-y-auto space-y-1">
+                      {syncResult.details.stocksAdded.map((stock: string, idx: number) => (
+                        <div key={idx} className="text-green-400">+ {stock}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 건너뛴 종목 */}
+                {syncResult.details?.stocksSkipped?.length > 0 && (
+                  <div>
+                    <div className="text-sm text-gray-400 mb-2">⚠️ 이미 존재하는 종목 (건너뜀)</div>
+                    <div className="bg-white/5 p-3 rounded text-xs max-h-40 overflow-y-auto space-y-1">
+                      {syncResult.details.stocksSkipped.map((stock: string, idx: number) => (
+                        <div key={idx} className="text-yellow-400">○ {stock}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 에러 */}
+                {syncResult.errors?.length > 0 && (
+                  <div>
+                    <div className="text-sm text-red-400 mb-2">❌ 오류</div>
+                    <div className="bg-red-500/10 p-3 rounded text-xs max-h-40 overflow-y-auto space-y-1">
+                      {syncResult.errors.map((error: string, idx: number) => (
+                        <div key={idx} className="text-red-400">• {error}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : null}
+
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setIsSyncModalOpen(false)}
+                className="px-4 py-2 bg-gradient-to-r from-[#4fc3f7] to-[#29b6f6] text-[#1a1a2e] rounded font-semibold"
+              >
+                확인
               </button>
             </div>
           </div>
