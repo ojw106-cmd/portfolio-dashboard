@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 
+// Force Node.js runtime (required for fs operations)
+export const runtime = 'nodejs';
+
 interface ParsedStock {
   ticker: string;
   name: string;
