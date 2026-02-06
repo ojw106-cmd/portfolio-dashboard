@@ -344,8 +344,17 @@ export function ResearchView() {
                       }`}
                     >
                       <div className="text-xs opacity-70">{stock.market}</div>
-                      <div className="font-semibold">{stock.ticker}</div>
-                      <div className="text-xs opacity-70">{stock.name}</div>
+                      {stock.market === 'KR' ? (
+                        <>
+                          <div className="font-semibold">{stock.name}</div>
+                          <div className="text-xs opacity-70">{stock.ticker}</div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="font-semibold">{stock.ticker}</div>
+                          <div className="text-xs opacity-70">{stock.name}</div>
+                        </>
+                      )}
                     </button>
                     <div className="hidden group-hover:flex gap-1 ml-2">
                       <select
@@ -396,8 +405,17 @@ export function ResearchView() {
                       }`}
                     >
                       <div className="text-xs opacity-70">{stock.market}</div>
-                      <div className="font-semibold">{stock.ticker}</div>
-                      <div className="text-xs opacity-70">{stock.name}</div>
+                      {stock.market === 'KR' ? (
+                        <>
+                          <div className="font-semibold">{stock.name}</div>
+                          <div className="text-xs opacity-70">{stock.ticker}</div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="font-semibold">{stock.ticker}</div>
+                          <div className="text-xs opacity-70">{stock.name}</div>
+                        </>
+                      )}
                     </button>
                     <div className="hidden group-hover:flex gap-1 ml-2">
                       <select
