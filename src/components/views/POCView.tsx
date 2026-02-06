@@ -23,6 +23,12 @@ interface Position {
   percentage: number;
   confidence: number; // 1-10
   thesisValid: boolean;
+  // 추가 필드
+  avgPrice?: number; // 매수가 (달러 or 원)
+  shares?: number; // 보유주식수
+  currentPrice?: number; // 현재가 (달러 or 원)
+  profitAmount?: number; // 수익금액 (원화)
+  profitRate?: number; // 수익률 (%)
 }
 
 interface Portfolio {
@@ -68,6 +74,9 @@ const MOCK_ACCOUNTS: Account[] = [
   },
 ];
 
+// 환율 (하드코딩)
+const EXCHANGE_RATE = 1477;
+
 const MOCK_PORTFOLIO: Record<string, Portfolio[]> = {
   jinwon: [
     {
@@ -84,6 +93,11 @@ const MOCK_PORTFOLIO: Record<string, Portfolio[]> = {
             percentage: 40.0,
             confidence: 9,
             thesisValid: true,
+            avgPrice: 48.24, // 매수가 $48.24
+            shares: 590, // 보유 590주
+            currentPrice: 50.12, // 현재가 $50.12
+            profitAmount: 1109, // 수익 $1,109 (= (50.12-48.24) * 590)
+            profitRate: 3.9, // 수익률 +3.9%
           },
           {
             ticker: 'POET',
@@ -94,6 +108,11 @@ const MOCK_PORTFOLIO: Record<string, Portfolio[]> = {
             percentage: 30.0,
             confidence: 8,
             thesisValid: true,
+            avgPrice: 4.87, // 매수가 $4.87
+            shares: 4380, // 보유 4,380주
+            currentPrice: 5.45, // 현재가 $5.45
+            profitAmount: 2540, // 수익 $2,540 (= (5.45-4.87) * 4380)
+            profitRate: 11.9, // 수익률 +11.9%
           },
         ],
         maxSlots: 5,
@@ -110,6 +129,11 @@ const MOCK_PORTFOLIO: Record<string, Portfolio[]> = {
             percentage: 25.0,
             confidence: 7,
             thesisValid: true,
+            avgPrice: 176.32, // 매수가 $176.32
+            shares: 50, // 보유 50주
+            currentPrice: 169.85, // 현재가 $169.85
+            profitAmount: -323, // 손실 -$323 (= (169.85-176.32) * 50)
+            profitRate: -3.7, // 수익률 -3.7%
           },
         ],
         maxSlots: 7,
@@ -134,6 +158,11 @@ const MOCK_PORTFOLIO: Record<string, Portfolio[]> = {
             percentage: 40.0,
             confidence: 8,
             thesisValid: true,
+            avgPrice: 68500, // 매수가 68,500원
+            shares: 613, // 보유 613주
+            currentPrice: 71200, // 현재가 71,200원
+            profitAmount: 1655100, // 수익 1,655,100원 (= (71200-68500) * 613)
+            profitRate: 3.9, // 수익률 +3.9%
           },
         ],
         maxSlots: 5,
@@ -411,34 +440,69 @@ export function POCView() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {/* 채워진 슬롯 */}
-            {currentPortfolio.longTerm.positions.map((pos, idx) => (
-              <div
-                key={idx}
-                className="bg-gradient-to-br from-[#4fc3f7]/20 to-[#29b6f6]/20 border border-[#4fc3f7]/50 rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer"
-              >
-                <div className="text-xl font-bold text-white mb-1">
-                  {pos.ticker}
-                </div>
-                <div className="text-sm text-[#888] mb-3">{pos.name}</div>
-                <div className="text-xs text-[#888] mb-3">
-                  {pos.category} / {pos.theme}
-                </div>
+            {currentPortfolio.longTerm.positions.map((pos, idx) => {
+              const isUS = currentPortfolio.market === 'US';
+              const profitAmountKRW = pos.profitAmount
+                ? isUS
+                  ? pos.profitAmount * EXCHANGE_RATE
+                  : pos.profitAmount
+                : 0;
+              const profitColor =
+                (pos.profitRate || 0) > 0
+                  ? 'text-green-400'
+                  : (pos.profitRate || 0) < 0
+                  ? 'text-red-400'
+                  : 'text-gray-400';
+              
+              return (
+                <div
+                  key={idx}
+                  className="bg-gradient-to-br from-[#4fc3f7]/20 to-[#29b6f6]/20 border border-[#4fc3f7]/50 rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer"
+                >
+                  <div className="text-xl font-bold text-white mb-1">
+                    {pos.ticker}
+                  </div>
+                  <div className="text-sm text-[#888] mb-2">{pos.name}</div>
+                  <div className="text-xs text-[#888] mb-3">
+                    🏷️ {pos.theme}
+                  </div>
 
-                <div className="text-lg font-bold text-[#4fc3f7] mb-1">
-                  {pos.amount.toLocaleString()}M
-                </div>
-                <div className="text-sm text-[#888] mb-3">
-                  {pos.percentage.toFixed(1)}%
-                </div>
+                  <div className="text-lg font-bold text-[#4fc3f7] mb-1">
+                    💰 {pos.amount.toLocaleString()}M원 ({pos.percentage.toFixed(1)}%)
+                  </div>
+                  <div className="text-sm text-[#888] mb-3">
+                    🎯 확신도: {pos.confidence}/10 {pos.thesisValid ? '✅' : '❌'}
+                  </div>
 
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-[#888]">확신도: {pos.confidence}/10</span>
-                  <span className={pos.thesisValid ? 'text-green-400' : 'text-red-400'}>
-                    {pos.thesisValid ? '✅' : '❌'}
-                  </span>
+                  {/* 추가 정보 */}
+                  {pos.avgPrice && pos.shares && pos.currentPrice && (
+                    <div className="mt-3 pt-3 border-t border-white/10 space-y-1 text-xs">
+                      <div className="text-[#888]">
+                        📊 매수가: {isUS ? '$' : '₩'}
+                        {pos.avgPrice.toLocaleString()}
+                      </div>
+                      <div className="text-[#888]">
+                        보유: {pos.shares.toLocaleString()}주
+                      </div>
+                      <div className="text-[#888]">
+                        현재가: {isUS ? '$' : '₩'}
+                        {pos.currentPrice.toLocaleString()}{' '}
+                        {(pos.profitRate || 0) > 0 ? '📈' : (pos.profitRate || 0) < 0 ? '📉' : ''}
+                      </div>
+                      <div className={profitColor + ' font-semibold'}>
+                        수익: {profitAmountKRW >= 0 ? '+' : ''}
+                        {profitAmountKRW.toLocaleString()}원
+                      </div>
+                      <div className={profitColor + ' font-semibold'}>
+                        수익률: {(pos.profitRate || 0) >= 0 ? '+' : ''}
+                        {(pos.profitRate || 0).toFixed(1)}%{' '}
+                        {(pos.profitRate || 0) > 0 ? '🟢' : (pos.profitRate || 0) < 0 ? '🔴' : '⚪'}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* 빈 슬롯 */}
             {Array.from({
@@ -478,34 +542,69 @@ export function POCView() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
             {/* 채워진 슬롯 */}
-            {currentPortfolio.midTerm.positions.map((pos, idx) => (
-              <div
-                key={idx}
-                className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer"
-              >
-                <div className="text-xl font-bold text-white mb-1">
-                  {pos.ticker}
-                </div>
-                <div className="text-sm text-[#888] mb-3">{pos.name}</div>
-                <div className="text-xs text-[#888] mb-3">
-                  {pos.category} / {pos.theme}
-                </div>
+            {currentPortfolio.midTerm.positions.map((pos, idx) => {
+              const isUS = currentPortfolio.market === 'US';
+              const profitAmountKRW = pos.profitAmount
+                ? isUS
+                  ? pos.profitAmount * EXCHANGE_RATE
+                  : pos.profitAmount
+                : 0;
+              const profitColor =
+                (pos.profitRate || 0) > 0
+                  ? 'text-green-400'
+                  : (pos.profitRate || 0) < 0
+                  ? 'text-red-400'
+                  : 'text-gray-400';
+              
+              return (
+                <div
+                  key={idx}
+                  className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer"
+                >
+                  <div className="text-xl font-bold text-white mb-1">
+                    {pos.ticker}
+                  </div>
+                  <div className="text-sm text-[#888] mb-2">{pos.name}</div>
+                  <div className="text-xs text-[#888] mb-3">
+                    🏷️ {pos.theme}
+                  </div>
 
-                <div className="text-lg font-bold text-purple-400 mb-1">
-                  {pos.amount.toLocaleString()}M
-                </div>
-                <div className="text-sm text-[#888] mb-3">
-                  {pos.percentage.toFixed(1)}%
-                </div>
+                  <div className="text-lg font-bold text-purple-400 mb-1">
+                    💰 {pos.amount.toLocaleString()}M원 ({pos.percentage.toFixed(1)}%)
+                  </div>
+                  <div className="text-sm text-[#888] mb-3">
+                    🎯 확신도: {pos.confidence}/10 {pos.thesisValid ? '✅' : '❌'}
+                  </div>
 
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-[#888]">확신도: {pos.confidence}/10</span>
-                  <span className={pos.thesisValid ? 'text-green-400' : 'text-red-400'}>
-                    {pos.thesisValid ? '✅' : '❌'}
-                  </span>
+                  {/* 추가 정보 */}
+                  {pos.avgPrice && pos.shares && pos.currentPrice && (
+                    <div className="mt-3 pt-3 border-t border-white/10 space-y-1 text-xs">
+                      <div className="text-[#888]">
+                        📊 매수가: {isUS ? '$' : '₩'}
+                        {pos.avgPrice.toLocaleString()}
+                      </div>
+                      <div className="text-[#888]">
+                        보유: {pos.shares.toLocaleString()}주
+                      </div>
+                      <div className="text-[#888]">
+                        현재가: {isUS ? '$' : '₩'}
+                        {pos.currentPrice.toLocaleString()}{' '}
+                        {(pos.profitRate || 0) > 0 ? '📈' : (pos.profitRate || 0) < 0 ? '📉' : ''}
+                      </div>
+                      <div className={profitColor + ' font-semibold'}>
+                        수익: {profitAmountKRW >= 0 ? '+' : ''}
+                        {profitAmountKRW.toLocaleString()}원
+                      </div>
+                      <div className={profitColor + ' font-semibold'}>
+                        수익률: {(pos.profitRate || 0) >= 0 ? '+' : ''}
+                        {(pos.profitRate || 0).toFixed(1)}%{' '}
+                        {(pos.profitRate || 0) > 0 ? '🟢' : (pos.profitRate || 0) < 0 ? '🔴' : '⚪'}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* 빈 슬롯 */}
             {Array.from({
