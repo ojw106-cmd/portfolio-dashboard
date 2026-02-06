@@ -149,7 +149,7 @@ export async function GET() {
     }
 
     // Process each folder
-    for (const [folderPath, stocks] of folderMap.entries()) {
+    for (const [folderPath, stocks] of Array.from(folderMap.entries())) {
       try {
         // Find or create folder
         let folder = await prisma.researchFolder.findFirst({
