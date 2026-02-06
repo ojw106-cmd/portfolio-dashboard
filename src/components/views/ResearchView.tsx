@@ -37,7 +37,16 @@ export function ResearchView() {
   
   // Sync 관심종목 상태
   const [isSyncing, setIsSyncing] = useState(false);
-  const [syncResult, setSyncResult] = useState<any>(null);
+  const [syncResult, setSyncResult] = useState<{
+    added: number;
+    skipped: number;
+    errors: string[];
+    details: {
+      foldersCreated: string[];
+      stocksAdded: string[];
+      stocksSkipped: string[];
+    };
+  } | null>(null);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   
   // 종목 검색 상태
