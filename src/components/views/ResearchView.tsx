@@ -64,6 +64,10 @@ export function ResearchView() {
       if (res.ok) {
         const data = await res.json();
         setFolders(data);
+        // 처음 로드시에만 모든 폴더 닫기
+        if (collapsedFolders.size === 0) {
+          setCollapsedFolders(new Set(data.map((f: ResearchFolder) => f.id)));
+        }
       }
     } catch (error) {
       console.error('Failed to load data:', error);
