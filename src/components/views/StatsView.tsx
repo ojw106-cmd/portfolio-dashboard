@@ -34,7 +34,6 @@ const ACCOUNT_NAMES: Record<string, string> = {
 export function StatsView() {
   const [realizedProfits, setRealizedProfits] = useState<RealizedProfitSummary[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // 실현손익 기간 (기본: 2026-02-06 ~ 오늘)
   const [profitStartDate, setProfitStartDate] = useState('2026-02-06');
@@ -51,7 +50,6 @@ export function StatsView() {
   }, [profitStartDate, profitEndDate]);
 
   const fetchRealizedProfits = async () => {
-    setLoading(true);
     try {
       // TODO: API 연동 (현재는 Mock)
       const mockData: RealizedProfitSummary[] = [
@@ -60,8 +58,8 @@ export function StatsView() {
         { accountId: 'leon', accountName: '리온', totalProfit: -6266000, tradeCount: 15 },
       ];
       setRealizedProfits(mockData);
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch realized profits:', error);
     }
   };
 
@@ -71,13 +69,12 @@ export function StatsView() {
       return;
     }
 
-    setLoading(true);
     try {
       // TODO: API 연동 (현재는 Mock)
       const mockTrades: Trade[] = [];
       setTrades(mockTrades);
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch trades:', error);
     }
   };
 
