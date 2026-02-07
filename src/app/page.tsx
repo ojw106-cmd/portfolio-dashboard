@@ -9,6 +9,7 @@ import { JournalView } from '@/components/views/JournalView';
 import { ResearchView } from '@/components/views/ResearchView';
 import { POCView } from '@/components/views/POCView';
 import { StatsView } from '@/components/views/StatsView';
+import { InvestmentPrinciplesView } from '@/components/views/InvestmentPrinciplesView';
 import { AddAccountModal } from '@/components/modals/AddAccountModal';
 import { MemoModal } from '@/components/modals/MemoModal';
 import { ConfirmModal } from '@/components/modals/ConfirmModal';
@@ -61,6 +62,7 @@ export default function Home() {
         {activeTab === 'stats' && <StatsView />}
         {activeTab === 'journal' && <JournalView />}
         {activeTab === 'research' && <ResearchView />}
+        {activeTab === 'principles' && <InvestmentPrinciplesView />}
         {activeTab === 'poc' && <POCView />}
 
         <AddAccountModal />

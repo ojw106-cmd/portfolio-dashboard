@@ -636,12 +636,10 @@ export function POCView() {
         <div className="bg-white/5 rounded-xl p-6 border border-white/10">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-white">
-              장기투자: {(currentPortfolio.longTerm.budget * 10000).toLocaleString()}원 (60%)
+              장기투자: {(longTermTotal * 10000).toLocaleString()}원 ({longTermUsage.toFixed(1)}%), 배분 {(currentPortfolio.longTerm.budget * 10000).toLocaleString()}원 (60%)
             </h2>
             <div className="text-sm text-[#888]">
-              사용: {longTermUsage.toFixed(1)}% | 슬롯:{' '}
-              {currentPortfolio.longTerm.positions.length}/
-              {currentPortfolio.longTerm.maxSlots}
+              슬롯: {currentPortfolio.longTerm.positions.length}/{currentPortfolio.longTerm.maxSlots}
             </div>
           </div>
 
@@ -693,7 +691,7 @@ export function POCView() {
                   </div>
                   <div className="text-xs text-[#888] mb-1">(현재 가격 기준)</div>
                   <div className="text-sm text-[#888] mb-3">
-                    비중: {pos.percentage.toFixed(1)}% | 🎯 확신도: {pos.confidence}/10 {pos.thesisValid ? '✅' : '❌'}
+                    비중: {pos.percentage.toFixed(1)}%
                   </div>
 
                   {/* 추가 정보 */}
@@ -752,12 +750,10 @@ export function POCView() {
         <div className="bg-white/5 rounded-xl p-6 border border-white/10">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-white">
-              중단타: {(currentPortfolio.midTerm.budget * 10000).toLocaleString()}원 (30%)
+              중단타: {(midTermTotal * 10000).toLocaleString()}원 ({midTermUsage.toFixed(1)}%), 배분 {(currentPortfolio.midTerm.budget * 10000).toLocaleString()}원 (30%)
             </h2>
             <div className="text-sm text-[#888]">
-              사용: {midTermUsage.toFixed(1)}% | 슬롯:{' '}
-              {currentPortfolio.midTerm.positions.length}/
-              {currentPortfolio.midTerm.maxSlots}
+              슬롯: {currentPortfolio.midTerm.positions.length}/{currentPortfolio.midTerm.maxSlots}
             </div>
           </div>
 
@@ -809,7 +805,7 @@ export function POCView() {
                   </div>
                   <div className="text-xs text-[#888] mb-1">(현재 가격 기준)</div>
                   <div className="text-sm text-[#888] mb-3">
-                    비중: {pos.percentage.toFixed(1)}% | 🎯 확신도: {pos.confidence}/10 {pos.thesisValid ? '✅' : '❌'}
+                    비중: {pos.percentage.toFixed(1)}%
                   </div>
 
                   {/* 추가 정보 */}
@@ -868,12 +864,10 @@ export function POCView() {
         <div className="bg-white/5 rounded-xl p-6 border border-white/10">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-white">
-              현금: {(currentPortfolio.cash.budget * 10000).toLocaleString()}원 (10%)
+              현금: {(cashTotal * 10000).toLocaleString()}원 ({cashUsage.toFixed(1)}%), 배분 {(currentPortfolio.cash.budget * 10000).toLocaleString()}원 (10%)
             </h2>
             <div className="text-sm text-[#888]">
-              사용: {cashUsage.toFixed(1)}% | 슬롯:{' '}
-              {currentPortfolio.cash.positions.length}/
-              {currentPortfolio.cash.maxSlots}
+              슬롯: {currentPortfolio.cash.positions.length}/{currentPortfolio.cash.maxSlots}
             </div>
           </div>
 
