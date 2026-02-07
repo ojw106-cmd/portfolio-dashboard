@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PieChart } from '@/components/ui/PieChart';
+import { PieChart } from '@/components/dashboard/PieChart';
 
 // Mock 데이터 타입
 interface Account {
