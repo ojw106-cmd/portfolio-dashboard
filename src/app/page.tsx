@@ -3,8 +3,6 @@
 import { useEffect, useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { TabNavigation } from '@/components/layout/TabNavigation';
-import { SummaryView } from '@/components/views/SummaryView';
-import { PortfolioView } from '@/components/views/PortfolioView';
 import { JournalView } from '@/components/views/JournalView';
 import { ResearchView } from '@/components/views/ResearchView';
 import { POCView } from '@/components/views/POCView';

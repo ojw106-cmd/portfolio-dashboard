@@ -4,9 +4,7 @@ import { useUIStore } from '@/stores/useUIStore';
 import { useAccountStore } from '@/stores/useAccountStore';
 
 export function TabNavigation() {
-  const { activeTab, setActiveTab, openAddAccountModal } = useUIStore();
-  const { accounts, currentAccountId, setCurrentAccount, deleteAccount } =
-    useAccountStore();
+  const { activeTab, setActiveTab } = useUIStore();
 
   return (
     <div className="flex flex-wrap gap-1 mb-5 p-2 bg-white/5 rounded-xl">
