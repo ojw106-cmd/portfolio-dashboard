@@ -12,6 +12,12 @@ interface Account {
     extreme: number;
   };
   investmentSeed: number;
+  // 현황판용 추가 데이터
+  totalValue: number; // 총 평가금액 (원)
+  totalInvestment: number; // 총 투자금 (원)
+  totalProfit: number; // 총 평가손익 (원)
+  totalProfitRate: number; // 총 평가손익률 (%)
+  realizedProfit: number; // 총 실현손익 (원)
 }
 
 interface Position {
@@ -61,6 +67,11 @@ const MOCK_ACCOUNTS: Account[] = [
       extreme: 3000,
     },
     investmentSeed: 35000,
+    totalValue: 1016530158, // 총 평가금액
+    totalInvestment: 810290772, // 총 투자금
+    totalProfit: -5097028, // 총 평가손익
+    totalProfitRate: -0.63, // 총 평가손익률
+    realizedProfit: -16240235, // 총 실현손익
   },
   {
     id: 'dad',
@@ -71,6 +82,26 @@ const MOCK_ACCOUNTS: Account[] = [
       extreme: 2000,
     },
     investmentSeed: 54000,
+    totalValue: 922047313, // 총 평가금액
+    totalInvestment: 612406774, // 총 투자금
+    totalProfit: +600821, // 총 평가손익
+    totalProfitRate: +0.10, // 총 평가손익률
+    realizedProfit: -12105962, // 총 실현손익
+  },
+  {
+    id: 'leon',
+    name: '리온',
+    totalFunds: 12000,
+    reserveFunds: {
+      fixed: 0,
+      extreme: 0,
+    },
+    investmentSeed: 12000,
+    totalValue: 120579418, // 총 평가금액
+    totalInvestment: 121113800, // 총 투자금
+    totalProfit: -514500, // 총 평가손익
+    totalProfitRate: -0.44, // 총 평가손익률
+    realizedProfit: -6266000, // 총 실현손익
   },
 ];
 
@@ -217,6 +248,44 @@ const MOCK_PORTFOLIO: Record<string, Portfolio[]> = {
       },
     },
   ],
+  leon: [
+    {
+      market: 'US',
+      longTerm: {
+        budget: 3600,
+        positions: [],
+        maxSlots: 5,
+      },
+      midTerm: {
+        budget: 1800,
+        positions: [],
+        maxSlots: 7,
+      },
+      cash: {
+        budget: 600,
+        positions: [],
+        maxSlots: 3,
+      },
+    },
+    {
+      market: 'KR',
+      longTerm: {
+        budget: 3600,
+        positions: [],
+        maxSlots: 5,
+      },
+      midTerm: {
+        budget: 1800,
+        positions: [],
+        maxSlots: 7,
+      },
+      cash: {
+        budget: 600,
+        positions: [],
+        maxSlots: 3,
+      },
+    },
+  ],
 };
 
 export function POCView() {
@@ -280,6 +349,13 @@ export function POCView() {
     }
   });
 
+  // 전체 계좌 합산
+  const totalAllValue = MOCK_ACCOUNTS.reduce((sum, acc) => sum + acc.totalValue, 0);
+  const totalAllInvestment = MOCK_ACCOUNTS.reduce((sum, acc) => sum + acc.totalInvestment, 0);
+  const totalAllProfit = MOCK_ACCOUNTS.reduce((sum, acc) => sum + acc.totalProfit, 0);
+  const totalAllProfitRate = totalAllInvestment > 0 ? (totalAllProfit / totalAllInvestment) * 100 : 0;
+  const totalAllRealized = MOCK_ACCOUNTS.reduce((sum, acc) => sum + acc.realizedProfit, 0);
+
   return (
     <div className="space-y-6">
       {/* 헤더 */}
@@ -292,6 +368,98 @@ export function POCView() {
             슬롯/비중 제한 기반 포트폴리오 시각화 (Mock 데이터)
           </p>
         </div>
+      </div>
+
+      {/* 전체 요약 */}
+      <div className="bg-gradient-to-br from-[#4fc3f7]/10 to-[#29b6f6]/10 rounded-xl p-6 border border-[#4fc3f7]/30">
+        <h2 className="text-xl font-bold text-white mb-4">전체 요약</h2>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div>
+            <div className="text-sm text-[#888] mb-1">총 평가액</div>
+            <div className="text-2xl font-bold text-white">
+              {totalAllValue.toLocaleString()} 원
+            </div>
+          </div>
+          <div>
+            <div className="text-sm text-[#888] mb-1">총 투자금</div>
+            <div className="text-xl font-semibold text-[#888]">
+              {totalAllInvestment.toLocaleString()} 원
+            </div>
+          </div>
+          <div>
+            <div className="text-sm text-[#888] mb-1">총 손익</div>
+            <div className={`text-xl font-semibold ${totalAllProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {totalAllProfit >= 0 ? '+' : ''}{totalAllProfit.toLocaleString()} 원
+            </div>
+          </div>
+          <div>
+            <div className="text-sm text-[#888] mb-1">총 평가손익</div>
+            <div className={`text-xl font-semibold ${totalAllProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {totalAllProfitRate >= 0 ? '+' : ''}{totalAllProfitRate.toFixed(2)}%
+            </div>
+          </div>
+          <div>
+            <div className="text-sm text-[#888] mb-1">총 실현손익</div>
+            <div className={`text-xl font-semibold ${totalAllRealized >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {totalAllRealized >= 0 ? '+' : ''}{totalAllRealized.toLocaleString()} 원
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 계좌별 현황판 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {MOCK_ACCOUNTS.map((account) => (
+          <div
+            key={account.id}
+            className="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-[#4fc3f7] transition-all cursor-pointer"
+            onClick={() => setSelectedAccount(account)}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-white">{account.name}</h3>
+              {selectedAccount.id === account.id && (
+                <span className="text-xs bg-[#4fc3f7] text-black px-2 py-1 rounded">선택됨</span>
+              )}
+            </div>
+            
+            <div className="space-y-3">
+              <div>
+                <div className="text-xs text-[#888] mb-1">총 평가금액</div>
+                <div className="text-lg font-bold text-white">
+                  {account.totalValue.toLocaleString()} 원
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <div>
+                  <div className="text-[#888] mb-1">투자금액</div>
+                  <div className="text-white font-semibold">
+                    {account.totalInvestment.toLocaleString()} 원
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[#888] mb-1">평균</div>
+                  <div className={`font-semibold ${account.totalProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {account.totalProfit >= 0 ? '+' : ''}{account.totalProfit.toLocaleString()} 원
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[#888] mb-1">평가손익</div>
+                  <div className={`font-semibold ${account.totalProfitRate >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {account.totalProfitRate >= 0 ? '+' : ''}{account.totalProfitRate.toFixed(2)}%
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <div className="text-xs text-[#888] mb-1">실현손익(누적)</div>
+                <div className={`text-sm font-semibold ${account.realizedProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {account.realizedProfit >= 0 ? '+' : ''}{account.realizedProfit.toLocaleString()} 원
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* 1. 계좌 선택 */}
@@ -345,7 +513,7 @@ export function POCView() {
                 <span>{(selectedAccount.reserveFunds.fixed * 10000).toLocaleString()}원</span>
               </div>
               <div className="flex justify-between text-[#888]">
-                <span>└─ 극단 예비비</span>
+                <span>└─ 예비비</span>
                 <span>
                   {(selectedAccount.reserveFunds.extreme * 10000).toLocaleString()}원
                 </span>
@@ -433,9 +601,8 @@ export function POCView() {
             </div>
           </div>
 
-          <div className="mb-4 space-y-1 text-sm text-[#888]">
-            <div>• 1종목 최대: {(4200 * 10000).toLocaleString()}원 (40%)</div>
-            <div>• 1테마 최대: {(5250 * 10000).toLocaleString()}원 (50%)</div>
+          <div className="mb-4 text-sm text-[#888]">
+            • 비중 제한: 1종목 40% / 1테마 50%
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -551,7 +718,7 @@ export function POCView() {
           </div>
 
           <div className="mb-4 text-sm text-[#888]">
-            • 1종목 최대: {(1312 * 10000).toLocaleString()}원 (25%)
+            • 비중 제한: 1종목 25%
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
