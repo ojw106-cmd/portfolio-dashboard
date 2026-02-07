@@ -363,10 +363,10 @@ export function POCView() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            POC: 투자 룰북 자금 관리
+            포트폴리오
           </h1>
           <p className="text-[#888]">
-            슬롯/비중 제한 기반 포트폴리오 시각화 (Mock 데이터)
+            슬롯/비중 제한 기반 자금 관리 시스템
           </p>
         </div>
       </div>
@@ -916,18 +916,16 @@ export function POCView() {
         </div>
       </div>
 
-      {/* POC 노트 */}
+      {/* 시스템 노트 */}
       <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-        <h3 className="text-lg font-bold text-white mb-3">📝 POC 노트</h3>
+        <h3 className="text-lg font-bold text-white mb-3">📝 시스템 안내</h3>
         <ul className="space-y-2 text-sm text-[#888]">
-          <li>✅ 계좌 선택 UI</li>
-          <li>✅ 자금 구조 Overview</li>
+          <li>✅ 계좌별 자금 관리 (진원/아빠/리온)</li>
           <li>✅ 시장별 포트폴리오 (미장/국장)</li>
-          <li>✅ 슬롯 카드 디자인 (빈/채워진)</li>
-          <li>✅ 비중 제한 경고 시스템</li>
-          <li>✅ 상세 종목 정보 (매수평균, 수익/수익률)</li>
+          <li>✅ 슬롯 기반 비중 제한 (장기 5개, 중단타 7개, 현금 3개)</li>
+          <li>✅ 실시간 비중 경고 시스템</li>
           <li className="text-yellow-400">
-            🚧 다음: 실제 DB 연동 + 종목 추가/편집 기능
+            🔄 현재: Mock 데이터 표시 중 (실제 DB 연동 예정)
           </li>
         </ul>
       </div>

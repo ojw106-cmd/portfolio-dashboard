@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 
-type Tab = 'summary' | 'portfolio' | 'journal' | 'research' | 'poc' | 'stats' | 'principles';
+type Tab = 'portfolio' | 'stats' | 'journal' | 'research' | 'principles';
 
 interface ModalState {
   isOpen: boolean;
@@ -35,7 +35,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  activeTab: 'poc',
+  activeTab: 'portfolio',
   modals: {
     memo: { isOpen: false },
     addAccount: { isOpen: false },

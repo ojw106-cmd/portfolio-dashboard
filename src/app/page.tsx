@@ -57,13 +57,11 @@ export default function Home() {
         <Header onOpenSectorModal={() => setIsSectorModalOpen(true)} />
         <TabNavigation />
 
-        {activeTab === 'summary' && <SummaryView />}
-        {activeTab === 'portfolio' && <PortfolioView />}
+        {activeTab === 'portfolio' && <POCView />}
         {activeTab === 'stats' && <StatsView />}
         {activeTab === 'journal' && <JournalView />}
         {activeTab === 'research' && <ResearchView />}
         {activeTab === 'principles' && <InvestmentPrinciplesView />}
-        {activeTab === 'poc' && <POCView />}
 
         <AddAccountModal />
         <MemoModal />
