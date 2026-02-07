@@ -1,7 +1,6 @@
 'use client';
 
 import { useUIStore } from '@/stores/useUIStore';
-import { useAccountStore } from '@/stores/useAccountStore';
 
 export function TabNavigation() {
   const { activeTab, setActiveTab } = useUIStore();
