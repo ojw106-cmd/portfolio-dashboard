@@ -106,7 +106,7 @@ export function InvestmentPrinciplesView() {
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
               <ul className="list-disc list-inside space-y-2 text-sm text-red-300">
                 <li>충동 매수 (리얼치킨보이 포스팅 보고 딸깍)</li>
-                <li>테시스 불명확한 투자 ("잘 모르겠음")</li>
+                <li>테시스 불명확한 투자 (&quot;잘 모르겠음&quot;)</li>
                 <li>손절 라인 없는 투자</li>
                 <li>2x 레버리지 ETF 남용</li>
                 <li>FOMO 매매</li>
