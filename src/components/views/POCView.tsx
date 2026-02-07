@@ -254,7 +254,7 @@ export function POCView() {
   currentPortfolio.longTerm.positions.forEach((pos) => {
     if (pos.percentage > 40) {
       warnings.push(
-        `⚠️ ${pos.ticker}: ${pos.amount.toLocaleString()}만원 (${pos.percentage.toFixed(1)}%) - 장기 40% 제한 초과!`
+        `⚠️ ${pos.ticker}: ${(pos.amount * 10000).toLocaleString()}원 (${pos.percentage.toFixed(1)}%) - 장기 40% 제한 초과!`
       );
     }
   });
@@ -268,14 +268,14 @@ export function POCView() {
     (aiChipTotal / currentPortfolio.longTerm.budget) * 100;
   if (aiChipPercentage > 50) {
     warnings.push(
-      `⚠️ AI칩 테마: ${aiChipTotal.toLocaleString()}만원 (${aiChipPercentage.toFixed(1)}%) - 장기 50% 제한 초과!`
+      `⚠️ AI칩 테마: ${(aiChipTotal * 10000).toLocaleString()}원 (${aiChipPercentage.toFixed(1)}%) - 장기 50% 제한 초과!`
     );
   }
 
   currentPortfolio.midTerm.positions.forEach((pos) => {
     if (pos.percentage > 25) {
       warnings.push(
-        `⚠️ ${pos.ticker}: ${pos.amount.toLocaleString()}만원 (${pos.percentage.toFixed(1)}%) - 중단타 25% 제한 초과!`
+        `⚠️ ${pos.ticker}: ${(pos.amount * 10000).toLocaleString()}원 (${pos.percentage.toFixed(1)}%) - 중단타 25% 제한 초과!`
       );
     }
   });
@@ -320,7 +320,7 @@ export function POCView() {
         <div className="space-y-3">
           <div className="flex justify-between items-center text-2xl font-bold text-white">
             <span>총 자금</span>
-            <span>{selectedAccount.totalFunds.toLocaleString()}M</span>
+            <span>{(selectedAccount.totalFunds * 10000).toLocaleString()}원</span>
           </div>
 
           <div className="h-px bg-white/20 my-3"></div>
@@ -330,10 +330,10 @@ export function POCView() {
               <span className="text-[#888]">예비비</span>
               <span className="font-semibold">
                 {(
-                  selectedAccount.reserveFunds.fixed +
-                  selectedAccount.reserveFunds.extreme
+                  (selectedAccount.reserveFunds.fixed +
+                  selectedAccount.reserveFunds.extreme) * 10000
                 ).toLocaleString()}
-                M
+                원
               </span>
             </div>
             <div className="ml-6 space-y-1 text-sm">
@@ -342,12 +342,12 @@ export function POCView() {
                   ├─ 고정 예비비{' '}
                   <span className="text-red-400 font-bold">🔒</span>
                 </span>
-                <span>{selectedAccount.reserveFunds.fixed.toLocaleString()}M</span>
+                <span>{(selectedAccount.reserveFunds.fixed * 10000).toLocaleString()}원</span>
               </div>
               <div className="flex justify-between text-[#888]">
                 <span>└─ 극단 예비비</span>
                 <span>
-                  {selectedAccount.reserveFunds.extreme.toLocaleString()}M
+                  {(selectedAccount.reserveFunds.extreme * 10000).toLocaleString()}원
                 </span>
               </div>
             </div>
@@ -359,20 +359,20 @@ export function POCView() {
             <div className="flex justify-between items-center text-white">
               <span className="text-[#888]">투자 시드</span>
               <span className="font-semibold text-[#4fc3f7]">
-                {selectedAccount.investmentSeed.toLocaleString()}M
+                {(selectedAccount.investmentSeed * 10000).toLocaleString()}원
               </span>
             </div>
             <div className="ml-6 space-y-1 text-sm">
               <div className="flex justify-between text-[#888]">
                 <span>├─ 미장</span>
                 <span>
-                  {(selectedAccount.investmentSeed / 2).toLocaleString()}M (50%)
+                  {((selectedAccount.investmentSeed / 2) * 10000).toLocaleString()}원 (50%)
                 </span>
               </div>
               <div className="flex justify-between text-[#888]">
                 <span>└─ 국장</span>
                 <span>
-                  {(selectedAccount.investmentSeed / 2).toLocaleString()}M (50%)
+                  {((selectedAccount.investmentSeed / 2) * 10000).toLocaleString()}원 (50%)
                 </span>
               </div>
             </div>
@@ -424,7 +424,7 @@ export function POCView() {
         <div className="bg-white/5 rounded-xl p-6 border border-white/10">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-white">
-              장기투자: {currentPortfolio.longTerm.budget.toLocaleString()}M (60%)
+              장기투자: {(currentPortfolio.longTerm.budget * 10000).toLocaleString()}원 (60%)
             </h2>
             <div className="text-sm text-[#888]">
               사용: {longTermUsage.toFixed(1)}% | 슬롯:{' '}
@@ -434,8 +434,8 @@ export function POCView() {
           </div>
 
           <div className="mb-4 space-y-1 text-sm text-[#888]">
-            <div>• 1종목 최대: 4,200M (40%)</div>
-            <div>• 1테마 최대: 5,250M (50%)</div>
+            <div>• 1종목 최대: {(4200 * 10000).toLocaleString()}원 (40%)</div>
+            <div>• 1테마 최대: {(5250 * 10000).toLocaleString()}원 (50%)</div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -541,7 +541,7 @@ export function POCView() {
         <div className="bg-white/5 rounded-xl p-6 border border-white/10">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-white">
-              중단타: {currentPortfolio.midTerm.budget.toLocaleString()}M (30%)
+              중단타: {(currentPortfolio.midTerm.budget * 10000).toLocaleString()}원 (30%)
             </h2>
             <div className="text-sm text-[#888]">
               사용: {midTermUsage.toFixed(1)}% | 슬롯:{' '}
@@ -551,7 +551,7 @@ export function POCView() {
           </div>
 
           <div className="mb-4 text-sm text-[#888]">
-            • 1종목 최대: 1,312M (25%)
+            • 1종목 최대: {(1312 * 10000).toLocaleString()}원 (25%)
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
@@ -657,7 +657,7 @@ export function POCView() {
         <div className="bg-white/5 rounded-xl p-6 border border-white/10">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-white">
-              현금: {currentPortfolio.cash.budget.toLocaleString()}M (10%)
+              현금: {(currentPortfolio.cash.budget * 10000).toLocaleString()}원 (10%)
             </h2>
             <div className="text-sm text-[#888]">
               사용: {cashUsage.toFixed(1)}% | 슬롯:{' '}
@@ -667,7 +667,7 @@ export function POCView() {
           </div>
 
           <div className="mb-4 text-sm text-[#888]">
-            • 1종목 최대: 875M (50%) | 별도 슬롯 카운트
+            • 1종목 최대: {(875 * 10000).toLocaleString()}원 (50%) | 별도 슬롯 카운트
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -683,7 +683,7 @@ export function POCView() {
                 <div className="text-sm text-[#888] mb-3">{pos.name}</div>
 
                 <div className="text-lg font-bold text-green-400 mb-1">
-                  {pos.amount.toLocaleString()}M
+                  {(pos.amount * 10000).toLocaleString()}원
                 </div>
                 <div className="text-sm text-[#888]">
                   {pos.percentage.toFixed(1)}%
