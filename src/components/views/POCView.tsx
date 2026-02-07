@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { PieChart } from '@/components/dashboard/PieChart';
+import { ThemeDetailModal } from '@/components/modals/ThemeDetailModal';
+import { AddPositionModal } from '@/components/modals/AddPositionModal';
 
 // Mock 데이터 타입
 interface Account {
@@ -294,6 +296,11 @@ export function POCView() {
     MOCK_ACCOUNTS[0]
   );
   const [selectedMarket, setSelectedMarket] = useState<'US' | 'KR'>('US');
+  
+  // 모달 state
+  const [themeDetailOpen, setThemeDetailOpen] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState<any>(null);
+  const [addPositionOpen, setAddPositionOpen] = useState(false);
 
   const portfolios = MOCK_PORTFOLIO[selectedAccount.id];
   const currentPortfolio = portfolios.find((p) => p.market === selectedMarket);
@@ -735,11 +742,12 @@ export function POCView() {
             }).map((_, idx) => (
               <div
                 key={`empty-${idx}`}
+                onClick={() => setAddPositionOpen(true)}
                 className="bg-white/5 border-2 border-dashed border-white/20 rounded-lg p-4 flex items-center justify-center hover:border-[#4fc3f7] hover:bg-white/10 transition-all cursor-pointer"
               >
                 <div className="text-center text-[#888]">
                   <div className="text-3xl mb-2">+</div>
-                  <div className="text-sm">종목 추가</div>
+                  <div className="text-sm">종목/테마 추가</div>
                 </div>
               </div>
             ))}
@@ -849,11 +857,12 @@ export function POCView() {
             }).map((_, idx) => (
               <div
                 key={`empty-${idx}`}
+                onClick={() => setAddPositionOpen(true)}
                 className="bg-white/5 border-2 border-dashed border-white/20 rounded-lg p-4 flex items-center justify-center hover:border-purple-500 hover:bg-white/10 transition-all cursor-pointer"
               >
                 <div className="text-center text-[#888]">
                   <div className="text-3xl mb-2">+</div>
-                  <div className="text-sm">종목 추가</div>
+                  <div className="text-sm">종목/테마 추가</div>
                 </div>
               </div>
             ))}
@@ -904,11 +913,12 @@ export function POCView() {
             }).map((_, idx) => (
               <div
                 key={`empty-${idx}`}
+                onClick={() => setAddPositionOpen(true)}
                 className="bg-white/5 border-2 border-dashed border-white/20 rounded-lg p-4 flex items-center justify-center hover:border-green-500 hover:bg-white/10 transition-all cursor-pointer"
               >
                 <div className="text-center text-[#888]">
                   <div className="text-3xl mb-2">+</div>
-                  <div className="text-sm">종목 추가</div>
+                  <div className="text-sm">종목/테마 추가</div>
                 </div>
               </div>
             ))}
@@ -929,6 +939,34 @@ export function POCView() {
           </li>
         </ul>
       </div>
+
+      {/* 모달들 */}
+      {selectedTheme && (
+        <ThemeDetailModal
+          isOpen={themeDetailOpen}
+          onClose={() => {
+            setThemeDetailOpen(false);
+            setSelectedTheme(null);
+          }}
+          themeName={selectedTheme.name}
+          totalValue={selectedTheme.totalValue}
+          currentWeight={selectedTheme.currentWeight}
+          targetWeight={selectedTheme.targetWeight}
+          stocks={selectedTheme.stocks}
+          market={selectedMarket}
+        />
+      )}
+
+      <AddPositionModal
+        isOpen={addPositionOpen}
+        onClose={() => setAddPositionOpen(false)}
+        onSubmit={(data) => {
+          console.log('New position:', data);
+          // TODO: API 연동
+          alert('종목/테마 추가 기능은 API 연동 후 활성화됩니다');
+        }}
+        market={selectedMarket}
+      />
     </div>
   );
 }
