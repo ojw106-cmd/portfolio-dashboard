@@ -35,7 +35,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  activeTab: 'summary',
+  activeTab: 'poc',
   modals: {
     memo: { isOpen: false },
     addAccount: { isOpen: false },

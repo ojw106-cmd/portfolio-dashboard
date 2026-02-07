@@ -212,37 +212,6 @@ export function PortfolioView() {
         </Button>
       </div>
 
-      {/* 투자금액 */}
-      <Card title="투자금액">
-        <div className="text-3xl font-bold text-[#4fc3f7] mb-4">
-          {formatKRW(summary.totalValue)}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white/[0.03] rounded-lg p-4">
-            <span className="text-sm text-[#888] block mb-1">국내</span>
-            <span className="text-[#4fc3f7]">
-              {formatKRW(summary.markets.KR?.totalValue || 0)}
-            </span>
-            <span className="text-sm text-[#666] ml-2">
-              (현금 {formatKRW(summary.markets.KR?.cashValue || 0)})
-            </span>
-          </div>
-          <div className="bg-white/[0.03] rounded-lg p-4">
-            <span className="text-sm text-[#888] block mb-1">해외</span>
-            <span className="text-[#4fc3f7]">
-              ${((summary.markets.US?.totalValue || 0) / rate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-            <span className="text-sm text-[#666] ml-2">
-              ({formatKRW(summary.markets.US?.totalValue || 0)})
-            </span>
-            <div className="text-xs text-[#666] mt-1">
-              현금 ${((summary.markets.US?.cashValue || 0) / rate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              <span className="ml-1">({formatKRW(summary.markets.US?.cashValue || 0)})</span>
-            </div>
-          </div>
-        </div>
-      </Card>
-
       {/* 수익률 현황 */}
       <Card title="수익률 현황">
         <ReturnSummary
