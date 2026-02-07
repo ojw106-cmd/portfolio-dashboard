@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { PieChart } from '@/components/ui/PieChart';
 
 // Mock 데이터 타입
 interface Account {
@@ -482,68 +483,111 @@ export function POCView() {
         </div>
       </div>
 
-      {/* 2. 자금 구조 Overview */}
-      <div className="bg-gradient-to-br from-[#4fc3f7]/10 to-[#29b6f6]/10 rounded-xl p-6 border border-[#4fc3f7]/30">
-        <h2 className="text-xl font-bold text-white mb-4">자금 구조</h2>
-        <div className="space-y-3">
-          <div className="flex justify-between items-center text-2xl font-bold text-white">
-            <span>총 자금</span>
-            <span>{(selectedAccount.totalFunds * 10000).toLocaleString()}원</span>
+      {/* 2. 자금 구조 + 비중 차트 (3분할) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* 자금 구조 */}
+        <div className="bg-gradient-to-br from-[#4fc3f7]/10 to-[#29b6f6]/10 rounded-xl p-6 border border-[#4fc3f7]/30">
+          <h2 className="text-xl font-bold text-white mb-4">자금 구조</h2>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center text-2xl font-bold text-white">
+              <span>총 자금</span>
+              <span>{(selectedAccount.totalFunds * 10000).toLocaleString()}원</span>
+            </div>
+
+            <div className="h-px bg-white/20 my-3"></div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-white">
+                <span className="text-[#888]">예비비</span>
+                <span className="font-semibold">
+                  {(
+                    (selectedAccount.reserveFunds.fixed +
+                    selectedAccount.reserveFunds.extreme) * 10000
+                  ).toLocaleString()}
+                  원
+                </span>
+              </div>
+              <div className="ml-6 space-y-1 text-sm">
+                <div className="flex justify-between text-[#888]">
+                  <span>
+                    ├─ 고정 예비비{' '}
+                    <span className="text-red-400 font-bold">🔒</span>
+                  </span>
+                  <span>{(selectedAccount.reserveFunds.fixed * 10000).toLocaleString()}원</span>
+                </div>
+                <div className="flex justify-between text-[#888]">
+                  <span>└─ 예비비</span>
+                  <span>
+                    {(selectedAccount.reserveFunds.extreme * 10000).toLocaleString()}원
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="h-px bg-white/20 my-3"></div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-white">
+                <span className="text-[#888]">투자 시드</span>
+                <span className="font-semibold text-[#4fc3f7]">
+                  {(selectedAccount.investmentSeed * 10000).toLocaleString()}원
+                </span>
+              </div>
+              <div className="ml-6 space-y-1 text-sm">
+                <div className="flex justify-between text-[#888]">
+                  <span>├─ 미장</span>
+                  <span>
+                    {((selectedAccount.investmentSeed / 2) * 10000).toLocaleString()}원 (50%)
+                  </span>
+                </div>
+                <div className="flex justify-between text-[#888]">
+                  <span>└─ 국장</span>
+                  <span>
+                    {((selectedAccount.investmentSeed / 2) * 10000).toLocaleString()}원 (50%)
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div className="h-px bg-white/20 my-3"></div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-white">
-              <span className="text-[#888]">예비비</span>
-              <span className="font-semibold">
-                {(
-                  (selectedAccount.reserveFunds.fixed +
-                  selectedAccount.reserveFunds.extreme) * 10000
-                ).toLocaleString()}
-                원
-              </span>
-            </div>
-            <div className="ml-6 space-y-1 text-sm">
-              <div className="flex justify-between text-[#888]">
-                <span>
-                  ├─ 고정 예비비{' '}
-                  <span className="text-red-400 font-bold">🔒</span>
-                </span>
-                <span>{(selectedAccount.reserveFunds.fixed * 10000).toLocaleString()}원</span>
-              </div>
-              <div className="flex justify-between text-[#888]">
-                <span>└─ 예비비</span>
-                <span>
-                  {(selectedAccount.reserveFunds.extreme * 10000).toLocaleString()}원
-                </span>
-              </div>
-            </div>
+        {/* 국내주식 비중 */}
+        <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+          <h3 className="text-center text-[#81d4fa] text-lg font-bold mb-4">국내주식 비중</h3>
+          <div className="flex items-center justify-center">
+            <PieChart
+              items={[
+                { label: 'AI칩', value: 42000000, color: '#4fc3f7' },
+                { label: '로봇', value: 35000000, color: '#29b6f6' },
+                { label: '배터리', value: 18000000, color: '#81d4fa' },
+                { label: '기타', value: 10000000, color: '#b3e5fc' },
+              ]}
+              total={105000000}
+              centerValue="4"
+              centerLabel="섹터"
+              gridLegend
+              maxLegendHeight={180}
+            />
           </div>
+        </div>
 
-          <div className="h-px bg-white/20 my-3"></div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-white">
-              <span className="text-[#888]">투자 시드</span>
-              <span className="font-semibold text-[#4fc3f7]">
-                {(selectedAccount.investmentSeed * 10000).toLocaleString()}원
-              </span>
-            </div>
-            <div className="ml-6 space-y-1 text-sm">
-              <div className="flex justify-between text-[#888]">
-                <span>├─ 미장</span>
-                <span>
-                  {((selectedAccount.investmentSeed / 2) * 10000).toLocaleString()}원 (50%)
-                </span>
-              </div>
-              <div className="flex justify-between text-[#888]">
-                <span>└─ 국장</span>
-                <span>
-                  {((selectedAccount.investmentSeed / 2) * 10000).toLocaleString()}원 (50%)
-                </span>
-              </div>
-            </div>
+        {/* 해외주식 비중 */}
+        <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+          <h3 className="text-center text-[#81d4fa] text-lg font-bold mb-4">해외주식 비중</h3>
+          <div className="flex items-center justify-center">
+            <PieChart
+              items={[
+                { label: 'AI칩', value: 62000000, color: '#4fc3f7' },
+                { label: '빅테크', value: 28000000, color: '#29b6f6' },
+                { label: '광학', value: 12000000, color: '#81d4fa' },
+                { label: '기타', value: 8000000, color: '#b3e5fc' },
+              ]}
+              total={110000000}
+              centerValue="4"
+              centerLabel="섹터"
+              gridLegend
+              maxLegendHeight={180}
+            />
           </div>
         </div>
       </div>
