@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 
-type Tab = 'summary' | 'portfolio' | 'journal' | 'research' | 'poc';
+type Tab = 'summary' | 'portfolio' | 'journal' | 'research' | 'poc' | 'stats';
 
 interface ModalState {
   isOpen: boolean;

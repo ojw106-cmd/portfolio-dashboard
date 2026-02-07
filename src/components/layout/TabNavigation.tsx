@@ -89,6 +89,17 @@ export function TabNavigation() {
       )}
 
       <button
+        onClick={() => setActiveTab('stats')}
+        className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+          activeTab === 'stats'
+            ? 'bg-gradient-to-r from-[#4fc3f7] to-[#29b6f6] text-[#1a1a2e]'
+            : 'text-[#888] hover:bg-white/10 hover:text-[#ccc]'
+        }`}
+      >
+        기록&통계
+      </button>
+
+      <button
         onClick={() => setActiveTab('journal')}
         className={`px-6 py-3 rounded-lg font-semibold transition-all ${
           activeTab === 'journal'
