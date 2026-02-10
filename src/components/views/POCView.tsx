@@ -297,16 +297,88 @@ export function POCView() {
   );
   const [selectedMarket, setSelectedMarket] = useState<'US' | 'KR'>('US');
   
+  // 포트폴리오 상태 관리 (Mock 데이터 기반)
+  const [portfolioData, setPortfolioData] = useState<Record<string, Portfolio[]>>(MOCK_PORTFOLIO);
+  
   // 모달 state
   const [themeDetailOpen, setThemeDetailOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedTheme, setSelectedTheme] = useState<any>(null);
   const [addPositionOpen, setAddPositionOpen] = useState(false);
+  
+  // 삭제 확인 모달 state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [positionToDelete, setPositionToDelete] = useState<{
+    section: 'longTerm' | 'midTerm' | 'cash';
+    ticker: string;
+    name: string;
+  } | null>(null);
 
-  const portfolios = MOCK_PORTFOLIO[selectedAccount.id];
+  const portfolios = portfolioData[selectedAccount.id];
   const currentPortfolio = portfolios.find((p) => p.market === selectedMarket);
 
   if (!currentPortfolio) return null;
+
+  // 삭제 확인 모달 열기
+  const handleDeleteClick = (
+    e: React.MouseEvent,
+    section: 'longTerm' | 'midTerm' | 'cash',
+    ticker: string,
+    name: string
+  ) => {
+    e.stopPropagation(); // 카드 클릭 이벤트 방지
+    setPositionToDelete({ section, ticker, name });
+    setDeleteConfirmOpen(true);
+  };
+
+  // 포지션 삭제 실행
+  const handleDeleteConfirm = () => {
+    if (!positionToDelete) return;
+
+    setPortfolioData((prev) => {
+      const newData = { ...prev };
+      const accountPortfolios = [...newData[selectedAccount.id]];
+      const portfolioIndex = accountPortfolios.findIndex(
+        (p) => p.market === selectedMarket
+      );
+
+      if (portfolioIndex !== -1) {
+        const portfolio = { ...accountPortfolios[portfolioIndex] };
+        const sectionKey = positionToDelete.section;
+        
+        if (sectionKey === 'longTerm') {
+          portfolio.longTerm = {
+            ...portfolio.longTerm,
+            positions: portfolio.longTerm.positions.filter(
+              (p) => p.ticker !== positionToDelete.ticker
+            ),
+          };
+        } else if (sectionKey === 'midTerm') {
+          portfolio.midTerm = {
+            ...portfolio.midTerm,
+            positions: portfolio.midTerm.positions.filter(
+              (p) => p.ticker !== positionToDelete.ticker
+            ),
+          };
+        } else if (sectionKey === 'cash') {
+          portfolio.cash = {
+            ...portfolio.cash,
+            positions: portfolio.cash.positions.filter(
+              (p) => p.ticker !== positionToDelete.ticker
+            ),
+          };
+        }
+        
+        accountPortfolios[portfolioIndex] = portfolio;
+        newData[selectedAccount.id] = accountPortfolios;
+      }
+
+      return newData;
+    });
+
+    setDeleteConfirmOpen(false);
+    setPositionToDelete(null);
+  };
 
   // 비중 계산
   const longTermTotal = currentPortfolio.longTerm.positions.reduce(
@@ -684,8 +756,15 @@ export function POCView() {
               return (
                 <div
                   key={idx}
-                  className="bg-gradient-to-br from-[#4fc3f7]/20 to-[#29b6f6]/20 border border-[#4fc3f7]/50 rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer"
+                  className="group relative bg-gradient-to-br from-[#4fc3f7]/20 to-[#29b6f6]/20 border border-[#4fc3f7]/50 rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer"
                 >
+                  {/* 삭제 버튼 */}
+                  <button
+                    onClick={(e) => handleDeleteClick(e, 'longTerm', pos.ticker, pos.name)}
+                    className="absolute top-2 right-2 w-6 h-6 bg-red-500/80 hover:bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm font-bold"
+                  >
+                    ×
+                  </button>
                   <div className="text-xl font-bold text-white mb-1">
                     {isUS ? pos.ticker : pos.name}
                   </div>
@@ -799,8 +878,15 @@ export function POCView() {
               return (
                 <div
                   key={idx}
-                  className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer"
+                  className="group relative bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer"
                 >
+                  {/* 삭제 버튼 */}
+                  <button
+                    onClick={(e) => handleDeleteClick(e, 'midTerm', pos.ticker, pos.name)}
+                    className="absolute top-2 right-2 w-6 h-6 bg-red-500/80 hover:bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm font-bold"
+                  >
+                    ×
+                  </button>
                   <div className="text-xl font-bold text-white mb-1">
                     {isUS ? pos.ticker : pos.name}
                   </div>
@@ -890,8 +976,15 @@ export function POCView() {
             {currentPortfolio.cash.positions.map((pos, idx) => (
               <div
                 key={idx}
-                className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer"
+                className="group relative bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer"
               >
+                {/* 삭제 버튼 */}
+                <button
+                  onClick={(e) => handleDeleteClick(e, 'cash', pos.ticker, pos.name)}
+                  className="absolute top-2 right-2 w-6 h-6 bg-red-500/80 hover:bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm font-bold"
+                >
+                  ×
+                </button>
                 <div className="text-xl font-bold text-white mb-1">
                   {currentPortfolio.market === 'US' ? pos.ticker : pos.name}
                 </div>
@@ -968,6 +1061,36 @@ export function POCView() {
         }}
         market={selectedMarket}
       />
+
+      {/* 삭제 확인 모달 */}
+      {deleteConfirmOpen && positionToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-[#1a1a2e] border border-white/20 rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-white mb-4">종목 삭제</h3>
+            <p className="text-[#888] mb-6">
+              정말 삭제하시겠습니까?{' '}
+              <span className="text-white font-semibold">{positionToDelete.name}</span>
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setDeleteConfirmOpen(false);
+                  setPositionToDelete(null);
+                }}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+              >
+                삭제
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
