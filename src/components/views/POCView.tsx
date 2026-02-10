@@ -687,9 +687,9 @@ export function POCView() {
                   className="bg-gradient-to-br from-[#4fc3f7]/20 to-[#29b6f6]/20 border border-[#4fc3f7]/50 rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer"
                 >
                   <div className="text-xl font-bold text-white mb-1">
-                    {pos.ticker}
+                    {isUS ? pos.ticker : pos.name}
                   </div>
-                  <div className="text-sm text-[#888] mb-2">{pos.name}</div>
+                  <div className="text-sm text-[#888] mb-2">{isUS ? pos.name : pos.ticker}</div>
                   <div className="text-xs text-[#888] mb-3">
                     🏷️ {pos.theme}
                   </div>
@@ -802,9 +802,9 @@ export function POCView() {
                   className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer"
                 >
                   <div className="text-xl font-bold text-white mb-1">
-                    {pos.ticker}
+                    {isUS ? pos.ticker : pos.name}
                   </div>
-                  <div className="text-sm text-[#888] mb-2">{pos.name}</div>
+                  <div className="text-sm text-[#888] mb-2">{isUS ? pos.name : pos.ticker}</div>
                   <div className="text-xs text-[#888] mb-3">
                     🏷️ {pos.theme}
                   </div>
@@ -893,9 +893,9 @@ export function POCView() {
                 className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer"
               >
                 <div className="text-xl font-bold text-white mb-1">
-                  {pos.ticker}
+                  {currentPortfolio.market === 'US' ? pos.ticker : pos.name}
                 </div>
-                <div className="text-sm text-[#888] mb-3">{pos.name}</div>
+                <div className="text-sm text-[#888] mb-3">{currentPortfolio.market === 'US' ? pos.name : pos.ticker}</div>
 
                 <div className="text-lg font-bold text-green-400 mb-1">
                   {(pos.amount * 10000).toLocaleString()}원
