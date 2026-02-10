@@ -60,14 +60,15 @@ export function ThemeCard({
   // 비중 차이
   const weightDiff = currentWeight - targetWeight;
 
-  // 종목 티커 리스트 (최대 5개 + more)
+  // 종목 리스트 (최대 5개 + more)
+  // 국장은 회사명, 미장은 티커 표시
   const tickerList = useMemo(() => {
-    const tickers = stocks.map((s) => s.code);
-    if (tickers.length <= 5) {
-      return tickers.join(' / ');
+    const labels = stocks.map((s) => market === 'KR' ? s.name : s.code);
+    if (labels.length <= 5) {
+      return labels.join(' / ');
     }
-    return tickers.slice(0, 5).join(' / ') + ` +${tickers.length - 5}`;
-  }, [stocks]);
+    return labels.slice(0, 5).join(' / ') + ` +${labels.length - 5}`;
+  }, [stocks, market]);
 
   const profitClass =
     profitInfo.profit > 0
