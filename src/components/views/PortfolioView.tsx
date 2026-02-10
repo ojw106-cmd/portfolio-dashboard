@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/Button';
 import { PieChart } from '@/components/dashboard/PieChart';
 import { ReturnSummary } from '@/components/dashboard/ReturnSummary';
 import { PortfolioTable } from '@/components/portfolio/PortfolioTable';
+import { ThemeGrid } from '@/components/portfolio/ThemeGrid';
 import { TradingPanel } from '@/components/trading/TradingPanel';
 import { TradeHistory } from '@/components/trading/TradeHistory';
+import { ThemeDetailModal } from '@/components/modals/ThemeDetailModal';
+import { AddPositionModal } from '@/components/modals/AddPositionModal';
 import { useAccountStore } from '@/stores/useAccountStore';
 import { usePortfolioStore } from '@/stores/usePortfolioStore';
 import { useTradeStore } from '@/stores/useTradeStore';
@@ -21,7 +24,7 @@ import { useSectorStore } from '@/stores/useSectorStore';
 export function PortfolioView() {
   const { currentAccountId, fetchAccountDetail, accounts } =
     useAccountStore();
-  const { stocks, cash, fetchPortfolio, fetchCash, refreshAllPrices, refreshingPrices } =
+  const { stocks, cash, fetchPortfolio, fetchCash, refreshAllPrices, refreshingPrices, addStock } =
     usePortfolioStore();
   const { fetchTrades, fetchRealizedPnL, realizedPnL, trades } = useTradeStore();
   const { rate } = useExchangeRateStore();
@@ -31,6 +34,19 @@ export function PortfolioView() {
   // 실현손익 기간 설정
   const [pnlStartDate, setPnlStartDate] = useState<string>('');
   const [pnlEndDate, setPnlEndDate] = useState<string>('');
+
+  // 테마 상세 모달 상태
+  const [themeModal, setThemeModal] = useState<{
+    isOpen: boolean;
+    themeCode: string;
+    market: 'KR' | 'US';
+  }>({ isOpen: false, themeCode: '', market: 'KR' });
+
+  // 종목 추가 모달 상태
+  const [addPositionModal, setAddPositionModal] = useState<{
+    isOpen: boolean;
+    market: 'KR' | 'US';
+  }>({ isOpen: false, market: 'US' });
 
   useEffect(() => {
     if (currentAccountId) {
@@ -76,6 +92,113 @@ export function PortfolioView() {
     setPnlStartDate('');
     setPnlEndDate('');
   };
+
+  // 테마 클릭 핸들러
+  const handleThemeClick = (themeCode: string, market: 'KR' | 'US') => {
+    setThemeModal({ isOpen: true, themeCode, market });
+  };
+
+  // 종목 추가 모달 열기
+  const handleAddPositionClick = (market: 'KR' | 'US') => {
+    setAddPositionModal({ isOpen: true, market });
+  };
+
+  // 종목 추가 제출
+  const handleAddPositionSubmit = async (data: {
+    type: 'stock' | 'theme';
+    ticker?: string;
+    name?: string;
+    themeName?: string;
+    targetWeight: number;
+    theme: string;
+  }) => {
+    if (!currentAccountId) return;
+
+    try {
+      if (data.type === 'stock' && data.ticker) {
+        // 현재가 조회
+        const market = addPositionModal.market;
+        let currentPrice = 0;
+        try {
+          const priceRes = await fetch(
+            `/api/prices/${market.toLowerCase()}/${data.ticker}`
+          );
+          const priceData = await priceRes.json();
+          currentPrice = priceData.price || 0;
+        } catch (e) {
+          console.error('Failed to fetch price:', e);
+        }
+
+        await addStock({
+          accountId: currentAccountId,
+          market: addPositionModal.market,
+          sector: data.theme,
+          code: data.ticker,
+          name: data.name || data.ticker,
+          buyPrice: currentPrice,
+          currentPrice: currentPrice,
+          holdingQty: 0,
+        });
+
+        showStatus(`${data.ticker} 추가 완료`);
+      }
+    } catch (error) {
+      console.error('Failed to add position:', error);
+      showStatus('종목 추가 실패', true);
+    }
+
+    setAddPositionModal({ isOpen: false, market: 'US' });
+  };
+
+  // 테마 상세 모달용 데이터 준비
+  const themeModalData = useMemo(() => {
+    if (!themeModal.isOpen) return null;
+
+    const themeStocks = stocks.filter(
+      (s) => s.market === themeModal.market && s.sector === themeModal.themeCode
+    );
+    const rateMultiplier = themeModal.market === 'US' ? rate : 1;
+
+    let totalValue = 0;
+    const stockList = themeStocks.map((s) => {
+      const value = s.currentPrice * s.holdingQty * rateMultiplier;
+      const cost = s.buyPrice * s.holdingQty * rateMultiplier;
+      const profitAmount = value - cost;
+      const profitRate = cost > 0 ? (profitAmount / cost) * 100 : 0;
+      totalValue += value;
+
+      return {
+        ticker: s.code,
+        name: s.name,
+        shares: s.holdingQty,
+        avgPrice: s.buyPrice,
+        currentPrice: s.currentPrice,
+        value,
+        profitAmount,
+        profitRate,
+      };
+    });
+
+    // 시장 총액 계산
+    const marketStocks = stocks.filter((s) => s.market === themeModal.market);
+    let marketTotal = 0;
+    marketStocks.forEach((s) => {
+      marketTotal += s.currentPrice * s.holdingQty * rateMultiplier;
+    });
+    const cashValue = (cash[themeModal.market]?.amount || 0) * rateMultiplier;
+    marketTotal += cashValue;
+
+    const currentWeight = marketTotal > 0 ? (totalValue / marketTotal) * 100 : 0;
+    const targetWeight = themeStocks.reduce((sum, s) => sum + s.targetWeight, 0);
+
+    return {
+      themeName: getSectorName(themeModal.themeCode),
+      totalValue,
+      currentWeight,
+      targetWeight,
+      stocks: stockList,
+    };
+  }, [themeModal, stocks, cash, rate, getSectorName]);
 
   if (!currentAccountId || accounts.length === 0) {
     return (
@@ -362,8 +485,54 @@ export function PortfolioView() {
         <TradeHistory />
       </Card>
 
+      {/* 테마 그리드 - 해외 */}
+      <ThemeGrid
+        stocks={stocksData}
+        cash={Object.fromEntries(
+          Object.entries(cash).map(([k, v]) => [k, { amount: v.amount, targetWeight: v.targetWeight }])
+        )}
+        exchangeRate={rate}
+        market="US"
+        onThemeClick={(themeCode) => handleThemeClick(themeCode, 'US')}
+        onAddClick={() => handleAddPositionClick('US')}
+      />
+
+      {/* 테마 그리드 - 국내 */}
+      <ThemeGrid
+        stocks={stocksData}
+        cash={Object.fromEntries(
+          Object.entries(cash).map(([k, v]) => [k, { amount: v.amount, targetWeight: v.targetWeight }])
+        )}
+        exchangeRate={rate}
+        market="KR"
+        onThemeClick={(themeCode) => handleThemeClick(themeCode, 'KR')}
+        onAddClick={() => handleAddPositionClick('KR')}
+      />
+
       {/* 포트폴리오 테이블 */}
       <PortfolioTable />
+
+      {/* 테마 상세 모달 */}
+      {themeModalData && (
+        <ThemeDetailModal
+          isOpen={themeModal.isOpen}
+          onClose={() => setThemeModal({ isOpen: false, themeCode: '', market: 'KR' })}
+          themeName={themeModalData.themeName}
+          totalValue={themeModalData.totalValue}
+          currentWeight={themeModalData.currentWeight}
+          targetWeight={themeModalData.targetWeight}
+          stocks={themeModalData.stocks}
+          market={themeModal.market}
+        />
+      )}
+
+      {/* 종목 추가 모달 */}
+      <AddPositionModal
+        isOpen={addPositionModal.isOpen}
+        onClose={() => setAddPositionModal({ isOpen: false, market: 'US' })}
+        onSubmit={handleAddPositionSubmit}
+        market={addPositionModal.market}
+      />
     </div>
   );
 }

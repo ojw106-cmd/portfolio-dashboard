@@ -299,6 +299,7 @@ export function POCView() {
   
   // 모달 state
   const [themeDetailOpen, setThemeDetailOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedTheme, setSelectedTheme] = useState<any>(null);
   const [addPositionOpen, setAddPositionOpen] = useState(false);
 

@@ -7,182 +7,143 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 계정
 model Account {
-  id        String   @id @default(cuid())
-  accountId String   @unique // jinwon, dad, lion 등
-  name      String   // 진원, 아빠, 리온 등
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  portfolio    Stock[]
+  id           String        @id @default(cuid())
+  accountId    String        @unique
+  name         String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   cashHoldings CashHolding[]
-  trades       Trade[]
   realizedPnL  RealizedPnL[]
+  portfolio    Stock[]
+  trades       Trade[]
 }
 
-// 포트폴리오 내 주식
 model Stock {
-  id        String  @id @default(cuid())
-  accountId String
-  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
-
-  market       String // KR, US, CRYPTO
-  sector       String // AI, BIGTECH, ROBOT, BIO, POWER, OPTICAL, SPACE, DEFENSE, BATTERY, HEDGE, VENTURE, ETC
-  code         String // 종목코드 (005930, AAPL, BTC)
-  name         String // 종목명
-  targetWeight Float  @default(0) // 목표비중 (%)
-  buyPrice     Float  @default(0) // 평균매수가
-  currentPrice Float  @default(0) // 현재가
-  holdingQty   Float  @default(0) // 보유수량
-  memo         String? // 메모
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  accountId    String
+  market       String
+  sector       String
+  code         String
+  name         String
+  targetWeight Float    @default(0)
+  buyPrice     Float    @default(0)
+  currentPrice Float    @default(0)
+  holdingQty   Float    @default(0)
+  memo         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@unique([accountId, code, market])
 }
 
-// 현금 보유
 model CashHolding {
-  id        String  @id @default(cuid())
-  accountId String
-  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
-
-  market       String // KR, US, CRYPTO
-  amount       Float  @default(0) // 보유 현금
-  targetWeight Float  @default(0) // 목표비중 (%)
-  memo         String? // 메모
-
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  accountId    String
+  market       String
+  amount       Float    @default(0)
+  targetWeight Float    @default(0)
+  memo         String?
+  updatedAt    DateTime @updatedAt
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@unique([accountId, market])
 }
 
-// 거래 내역
 model Trade {
-  id        String  @id @default(cuid())
-  accountId String
-  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
-
-  date DateTime @default(now())
-  type String // buy, sell, deposit, withdraw, exchange
-
-  // 거래 대상 시장
-  market String? // KR, US, CRYPTO
-
-  // 매수/매도 관련
-  code     String? // 종목코드
-  name     String? // 종목명
-  price    Float? // 거래가격
-  qty      Float? // 수량
-  amount   Float? // 거래금액
-  pnl      Float? // 실현손익 (매도 시)
-  buyPrice Float? // 매수가 (매도 시 참조용)
-
-  // 환전 관련
-  direction  String? // KR_TO_US, US_TO_KR
-  fromAmount Float? // 환전 원본 금액
-  toAmount   Float? // 환전 결과 금액
-  rate       Float? // 적용 환율
-
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  accountId  String
+  date       DateTime @default(now())
+  type       String
+  market     String?
+  code       String?
+  name       String?
+  price      Float?
+  qty        Float?
+  amount     Float?
+  pnl        Float?
+  buyPrice   Float?
+  direction  String?
+  fromAmount Float?
+  toAmount   Float?
+  rate       Float?
+  createdAt  DateTime @default(now())
+  account    Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
 }
 
-// 누적 실현손익
 model RealizedPnL {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   accountId String
-  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
-
-  market String // KR, US
-  amount Float  @default(0) // 누적 실현손익
-
+  market    String
+  amount    Float    @default(0)
   updatedAt DateTime @updatedAt
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@unique([accountId, market])
 }
 
-// 매매일지
 model JournalEntry {
-  id        String  @id @default(cuid())
-  date      String  @unique // YYYY-MM-DD
-  content   String  // 일지 내용
-  important Boolean @default(false) // 중요 표시
-
+  id        String   @id @default(cuid())
+  date      String   @unique
+  content   String
+  important Boolean  @default(false)
   updatedAt DateTime @updatedAt
 }
 
-// 환율 캐시
 model ExchangeRate {
   id        String   @id @default(cuid())
-  currency  String   @unique // USD
-  rate      Float // 원화 환산 비율
+  currency  String   @unique
+  rate      Float
   updatedAt DateTime @updatedAt
 }
 
-// 사용자 정의 섹터
 model Sector {
   id        String   @id @default(cuid())
-  code      String   @unique // AI, BIGTECH 등
-  name      String   // AI/반도체, 빅테크 등
-  color     String   // HEX 색상 (#7c4dff)
-  sortOrder Int      @default(0) // 정렬 순서
-
+  code      String   @unique
+  name      String
+  color     String
+  sortOrder Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// 자산 스냅샷
 model Snapshot {
-  id        String   @id @default(cuid())
-  date      DateTime @default(now())
-
-  totalAsset      Float // 전체 자산 (원화 환산)
-  totalAssetChange Float @default(0) // 이전 스냅샷 대비 변화
-
-  // 계정별 자산
-  jinwonAsset      Float @default(0)
-  jinwonChange     Float @default(0)
-  dadAsset         Float @default(0)
-  dadChange        Float @default(0)
-  lionAsset        Float @default(0)
-  lionChange       Float @default(0)
-
-  // 추가 정보
-  exchangeRate     Float @default(1400) // 스냅샷 당시 환율
-  memo             String? // 메모
-
-  createdAt DateTime @default(now())
+  id               String   @id @default(cuid())
+  date             DateTime @default(now())
+  totalAsset       Float
+  totalAssetChange Float    @default(0)
+  jinwonAsset      Float    @default(0)
+  jinwonChange     Float    @default(0)
+  dadAsset         Float    @default(0)
+  dadChange        Float    @default(0)
+  lionAsset        Float    @default(0)
+  lionChange       Float    @default(0)
+  exchangeRate     Float    @default(1400)
+  memo             String?
+  createdAt        DateTime @default(now())
 }
 
-// 리서치 폴더
 model ResearchFolder {
-  id        String   @id @default(cuid())
-  name      String   // 폴더명 (관심종목, AI/반도체, 성장주 등)
-  sortOrder Int      @default(0) // 정렬 순서
-  
+  id        String          @id @default(cuid())
+  name      String
+  sortOrder Int             @default(0)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
   stocks    ResearchStock[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
-// 리서치 종목 (보유 여부와 무관)
 model ResearchStock {
-  id        String   @id @default(cuid())
-  folderId  String?  // 폴더 ID (null이면 미분류)
-  folder    ResearchFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
-  
-  ticker    String   // 티커 (AAPL, 삼성전자, BTC)
-  name      String   // 종목명
-  market    String   // KR, US, CRYPTO
-  
-  content   String   @default("") // 리서치 내용 (마크다운)
-  sortOrder Int      @default(0) // 폴더 내 정렬 순서
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  id        String          @id @default(cuid())
+  folderId  String?
+  ticker    String
+  name      String
+  market    String
+  content   String          @default("")
+  sortOrder Int             @default(0)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  folder    ResearchFolder? @relation(fields: [folderId], references: [id])
+
   @@unique([ticker, market])
 }
